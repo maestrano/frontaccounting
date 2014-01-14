@@ -11,22 +11,21 @@ require MAESTRANO_ROOT . '/app/init/base.php';
 // Require your app specific files here
 //-----------------------------------------------
 //define('MY_APP_DIR', realpath(MAESTRANO_ROOT . '/../'));
-//require MY_APP_DIR . '/include/some_class_file.php';
+define('MY_APP_DIR', '/Users/Arnaud/Sites/apps-dev/app-frontaccounting');
+require MY_APP_DIR . '/config_db.php';
 //require MY_APP_DIR . '/config/some_database_config_file.php';
 
 //-----------------------------------------------
 // Perform your custom preparation code
 //-----------------------------------------------
-// If you define the $opts variable then it will
-// automatically be passed to the MnoSsoUser object
-// for construction
-// e.g:
-// $opts = array();
-// if (!empty($db_name) and !empty($db_user)) {
-//     $conn = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8", $db_user, $db_pass);
-//     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
-//     
-//     $opts['db_connection'] = $conn;
-// }
+// Create database connection
+// NOTE: we assume that only one database was configured and that
+// tables have no prefix
+$opts = array();
+if ($db_connections && $db_connections[0]) {
+    $db_config = $db_connections[0];
+    $conn = mysqli_connect($db_config["host"], $db_config["dbuser"], $db_config["dbpassword"], $db_config["dbname"]);
+    $opts['db_connection'] = $conn;
+}
 
 
