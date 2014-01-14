@@ -19,8 +19,9 @@ require MY_APP_DIR . '/config_db.php';
 // Perform your custom preparation code
 //-----------------------------------------------
 // Create database connection
-// NOTE: we assume that only one database was configured and that
-// tables have no prefix
+// Implementation notes: 
+// - we assume that only one database was configured
+// - we assume that tables have no prefix
 $opts = array();
 if ($db_connections && $db_connections[0]) {
     $db_config = $db_connections[0];
