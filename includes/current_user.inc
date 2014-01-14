@@ -130,6 +130,57 @@ class current_user
 		}
 		return $this->logged;
 	}
+	
+	/*
+	 * Hook:Maestrano
+	 * Simplified login without password 
+	 */
+	function simpleLoginWithoutPassword($company, $loginname)
+	{
+		global $security_areas, $security_groups, $security_headings, $path_to_root, $login_delay;
+
+		$this->set_company($company);
+	    $this->logged = false;
+
+		set_global_connection();
+    
+    $Auth_Result = true;
+
+		if ($Auth_Result) {
+			$myrow = get_user_by_login($loginname);
+			
+			if (! @$myrow["inactive"]) {
+					$this->role_set = array();
+	        $this->access = $myrow["role_id"];
+	        
+					// store area codes available for current user role
+					$role = get_security_role($this->access);
+					if (!$role) {
+					  return false;
+					}
+					
+					foreach( $role['areas'] as $code ) {
+					  // filter only area codes for enabled security sections
+						if (in_array($code&~0xff, $role['sections'])) {
+							$this->role_set[] = $code;
+	        	}
+					}
+						
+        	$this->name = $myrow["real_name"];
+        	$this->pos = $myrow["pos"];
+        	$this->loginname = $loginname;
+        	$this->username = $this->loginname;
+        	$this->prefs = new user_prefs($myrow);
+        	$this->user = @$myrow["id"];
+          $this->email = @$myrow["email"];
+		    	update_user_visitdate($this->username);
+		      $this->logged = true;
+				  $this->last_act = time();
+				  $this->timeout = session_timeout();
+			}
+		}
+		return $this->logged;
+	}
 
 	function check_user_access()
 	{
