@@ -133,21 +133,21 @@ class current_user
 	
 	/*
 	 * Hook:Maestrano
-	 * Simplified login without password 
+	 * Simplified login without password just using the (user) record id
 	 */
-	function simpleLoginWithoutPassword($company, $loginname)
+	function simpleLoginWithoutPassword($company, $userid)
 	{
 		global $security_areas, $security_groups, $security_headings, $path_to_root, $login_delay;
 
 		$this->set_company($company);
-	    $this->logged = false;
+	  $this->logged = false;
 
 		set_global_connection();
     
     $Auth_Result = true;
 
 		if ($Auth_Result) {
-			$myrow = get_user_by_login($loginname);
+			$myrow = get_user($userid);
 			
 			if (! @$myrow["inactive"]) {
 					$this->role_set = array();
@@ -168,7 +168,7 @@ class current_user
 						
         	$this->name = $myrow["real_name"];
         	$this->pos = $myrow["pos"];
-        	$this->loginname = $loginname;
+        	$this->loginname = $myrow["user_id"];
         	$this->username = $this->loginname;
         	$this->prefs = new user_prefs($myrow);
         	$this->user = @$myrow["id"];
