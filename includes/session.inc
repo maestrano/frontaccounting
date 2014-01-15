@@ -460,15 +460,6 @@ if (strstr($_SERVER['PHP_SELF'], 'logout.php') == false){
 				$Ajax->activate('_page_body');
 			exit;
 		} else {
-		  
-		  // Hook:Maestrano
-      // Check Maestrano session is still valid
-      if ($maestrano->isSsoEnabled()) {
-        if (!$maestrano->getSsoSession()->isValid()) {
-          header("Location: " . $maestrano->getSsoInitUrl());
-        }
-      }
-		  
 			if (isset($_POST["company_login_nickname"]) && !isset($_POST["company_login_name"])) {
 				for ($i = 0; $i < count($db_connections); $i++) {
 					if ($db_connections[$i]["name"] == $_POST["company_login_nickname"]) {
@@ -500,6 +491,15 @@ if (strstr($_SERVER['PHP_SELF'], 'logout.php') == false){
 			$lang->set_language($_SESSION['language']->code);
 		}
 	} else
+	  
+	  // Hook:Maestrano
+    // Check Maestrano session is still valid
+    if ($maestrano->isSsoEnabled()) {
+      if (!$maestrano->getSsoSession()->isValid()) {
+        header("Location: " . $maestrano->getSsoInitUrl());
+      }
+    }
+	  
 		set_global_connection();
 
 	if (!isset($_SESSION["App"])) {
