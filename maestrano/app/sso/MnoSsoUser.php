@@ -47,6 +47,13 @@ class MnoSsoUser extends MnoSsoBaseUser
     $this->session["wa_current_user"] = new current_user();
     $this->session["wa_current_user"]->simpleLoginWithoutPassword(0,$this->local_id);
     $this->session["wa_current_user"]->ui_mode = 0;
+    $this->session["wa_current_user"]->last_act = time();
+    $this->session["wa_current_user"]->timeout = null;
+    $this->session['IPaddress'] = $_SERVER['REMOTE_ADDR'];
+		$this->session['userAgent'] = $_SERVER['HTTP_USER_AGENT'];
+		//echo $this->session['IPaddress'];
+		//echo '<br/>';
+		//echo $this->session['userAgent'];
     
     return true;
   }
