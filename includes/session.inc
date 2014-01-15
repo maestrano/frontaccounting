@@ -27,7 +27,17 @@ class SessionManager
 			session_set_cookie_params($limit, $path, $domain, $https, true);
 
 		session_start();
-
+    
+    // Hook:Maestrano
+    // Require authentication straight away if intranet
+    // mode enabled
+    $maestrano = MaestranoService::getInstance();
+    if ($maestrano->isSsoIntranetEnabled()) {
+      if (!$maestrano->getSsoSession()->isValid()) {
+        header("Location: " . $maestrano->getSsoInitUrl());
+      }
+    }
+    
 		// Make sure the session hasn't expired, and destroy it if it has
 		if ($this->validateSession())
 		{
@@ -420,9 +430,20 @@ if (strstr($_SERVER['PHP_SELF'], 'logout.php') == false){
 		include_once($path_to_root . '/company/'.user_company().'/installed_extensions.php');
 
 	install_hooks();
-
+	
+	// Hook:Maestrano
+  // Get service
+  $maestrano = MaestranoService::getInstance();
+  
 	if (!$_SESSION["wa_current_user"]->logged_in())
 	{
+	  
+	  // Hook:Maestrano
+    // Redirect to SSO login
+    if ($maestrano->isSsoEnabled()) {
+      header("Location: " . $maestrano->getSsoInitUrl());
+    }
+    
 		// Show login screen
 		if (!isset($_POST["user_name_entry_field"]) or $_POST["user_name_entry_field"] == "")
 		{
@@ -436,6 +457,15 @@ if (strstr($_SERVER['PHP_SELF'], 'logout.php') == false){
 				$Ajax->activate('_page_body');
 			exit;
 		} else {
+		  
+		  // Hook:Maestrano
+      // Check Maestrano session is still valid
+      if ($maestrano->isSsoEnabled()) {
+        if (!$maestrano->getSsoSession()->isValid()) {
+          header("Location: " . $maestrano->getSsoInitUrl());
+        }
+      }
+		  
 			if (isset($_POST["company_login_nickname"]) && !isset($_POST["company_login_name"])) {
 				for ($i = 0; $i < count($db_connections); $i++) {
 					if ($db_connections[$i]["name"] == $_POST["company_login_nickname"]) {
