@@ -9,6 +9,9 @@
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 	See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
 ***********************************************************************/
+// Hook:Maestrano
+// Load Maestrano
+require $path_to_root . '/maestrano/app/init/base.php';
 
 class SessionManager
 {
