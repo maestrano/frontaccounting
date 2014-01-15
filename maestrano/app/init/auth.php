@@ -39,4 +39,8 @@ if ($db_connections && $db_connections[0]) {
     $opts['db_connection'] = $conn;
 }
 
+// Set the frontaccounting session name
+$session_name = 'FA' . md5(dirname(MY_APP_DIR . "/includes/session.inc"));
+session_name($session_name);
+
 
