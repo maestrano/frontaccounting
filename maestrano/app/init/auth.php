@@ -12,7 +12,17 @@ require MAESTRANO_ROOT . '/app/init/base.php';
 //-----------------------------------------------
 //define('MY_APP_DIR', realpath(MAESTRANO_ROOT . '/../'));
 define('MY_APP_DIR', '/Users/Arnaud/Sites/apps-dev/app-frontaccounting');
-require MY_APP_DIR . '/config_db.php';
+chdir(MY_APP_DIR);
+$path_to_root = MY_APP_DIR;
+require 'config_db.php';
+require 'includes/db/sql_functions.inc';
+require 'includes/errors.inc';
+require 'includes/db/connect_db.inc';
+require 'admin/db/security_db.inc';
+require 'admin/db/users_db.inc';
+require 'includes/lang/gettext.php';
+require 'includes/lang/language.php';
+require 'includes/current_user.inc';
 //require MY_APP_DIR . '/config/some_database_config_file.php';
 
 //-----------------------------------------------
