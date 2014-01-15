@@ -23,7 +23,6 @@ require 'admin/db/users_db.inc';
 require 'includes/lang/gettext.php';
 require 'includes/lang/language.php';
 require 'includes/current_user.inc';
-//require MY_APP_DIR . '/config/some_database_config_file.php';
 
 //-----------------------------------------------
 // Perform your custom preparation code
@@ -42,5 +41,10 @@ if ($db_connections && $db_connections[0]) {
 // Set the frontaccounting session name
 $session_name = 'FA' . md5(dirname(MY_APP_DIR . "/includes/session.inc"));
 session_name($session_name);
+
+// Reset session completely to avoid garbage (undeclared classes)
+session_start();
+session_unset();
+session_destroy();
 
 
