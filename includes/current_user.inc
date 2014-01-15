@@ -176,7 +176,7 @@ class current_user
 		    	update_user_visitdate($this->username);
 		      $this->logged = true;
 				  $this->last_act = time();
-				  $this->timeout = session_timeout();
+				  $this->timeout = '600';
 			}
 		}
 		return $this->logged;
