@@ -16,6 +16,8 @@ include($path_to_root . "/includes/session.inc");
 // Hook:Maestrano
 $maestrano = MaestranoService::getInstance();
 if ($maestrano->isSsoEnabled()) {
+  session_unset();
+  @session_destroy();
   header("Location: " . $maestrano->getSsoLogoutUrl());
 }
 
