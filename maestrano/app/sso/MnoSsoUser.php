@@ -37,29 +37,19 @@ class MnoSsoUser extends MnoSsoBaseUser
    *
    * @return boolean whether the user was successfully set in session or not
    */
-  // protected function setInSession()
-  // {
-  //   // First set $conn variable (need global variable?)
-  //   $conn = $this->connection;
-  //   
-  //   $sel1 = $conn->query("SELECT ID,name,lastlogin FROM user WHERE ID = $this->local_id");
-  //   $chk = $sel1->fetch();
-  //   if ($chk["ID"] != "") {
-  //       $now = time();
-  //       
-  //       // Set session
-  //       $this->session['userid'] = $chk['ID'];
-  //       $this->session['username'] = stripslashes($chk['name']);
-  //       $this->session['lastlogin'] = $now;
-  //       
-  //       // Update last login timestamp
-  //       $upd1 = $conn->query("UPDATE user SET lastlogin = '$now' WHERE ID = $this->local_id");
-  //       
-  //       return true;
-  //   } else {
-  //       return false;
-  //   }
-  // }
+  protected function setInSession()
+  {
+    // Set language if not set already
+    get_text_init();
+    if (!isset($this->session["language"])) {
+      $this->session["language"] = new language('English','C','iso-8859-1','ltr');
+    }
+    $this->session["wa_current_user"] = new current_user();
+    $this->session["wa_current_user"]->simpleLoginWithoutPassword(0,$this->local_id);
+    $this->session["wa_current_user"]->ui_mode = 0;
+    
+    return true;
+  }
   
   
   /**
