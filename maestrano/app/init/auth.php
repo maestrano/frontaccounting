@@ -10,8 +10,7 @@ require MAESTRANO_ROOT . '/app/init/base.php';
 //-----------------------------------------------
 // Require your app specific files here
 //-----------------------------------------------
-//define('MY_APP_DIR', realpath(MAESTRANO_ROOT . '/../'));
-define('MY_APP_DIR', '/Users/Arnaud/Sites/apps-dev/app-frontaccounting');
+define('MY_APP_DIR', realpath(MAESTRANO_ROOT . '/../'));
 chdir(MY_APP_DIR);
 $path_to_root = MY_APP_DIR;
 require 'config_db.php';
