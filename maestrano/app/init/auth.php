@@ -41,9 +41,4 @@ if ($db_connections && $db_connections[0]) {
 $session_name = 'FA' . md5(dirname(MY_APP_DIR . "/includes/session.inc"));
 session_name($session_name);
 
-// Reset session completely to avoid garbage (undeclared classes)
-session_start();
-session_unset();
-session_destroy();
-
 
