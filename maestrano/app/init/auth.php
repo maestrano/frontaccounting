@@ -29,7 +29,7 @@ require 'includes/current_user.inc';
 // Create database connection
 // Implementation notes: 
 // - we assume that only one database was configured
-// - we assume that tables have no prefix
+// - we assume that tables only have prefix 0_
 $opts = array();
 if ($db_connections && $db_connections[0]) {
     $db_config = $db_connections[0];

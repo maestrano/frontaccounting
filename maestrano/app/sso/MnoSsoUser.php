@@ -82,7 +82,7 @@ class MnoSsoUser extends MnoSsoBaseUser
       $rep = 1;
       
       // Prepare query
-      $sql = "INSERT INTO users (user_id, real_name, password, phone, email, role_id, language, pos, print_profile, rep_popup)
+      $sql = "INSERT INTO 0_users (user_id, real_name, password, phone, email, role_id, language, pos, print_profile, rep_popup)
     		VALUES (?,?,?,?,?,?,?,?,?,?)";
     	$stmt = $this->connection->prepare($sql);
     	$stmt->bind_param("sssssisisi", 
@@ -137,7 +137,7 @@ class MnoSsoUser extends MnoSsoBaseUser
   protected function getLocalIdByUid()
   {
     $param = $this->connection->real_escape_string($this->uid);
-    $result = $this->connection->query("SELECT id FROM users WHERE mno_uid = '$param' LIMIT 1")->fetch_array();
+    $result = $this->connection->query("SELECT id FROM 0_users WHERE mno_uid = '$param' LIMIT 1")->fetch_array();
     
     if ($result && $result['id']) {
       return $result['id'];
@@ -154,7 +154,7 @@ class MnoSsoUser extends MnoSsoBaseUser
   protected function getLocalIdByEmail()
   {
     $param = $this->connection->real_escape_string($this->email);
-    $result = $this->connection->query("SELECT id FROM users WHERE email = '$param' LIMIT 1")->fetch_array();
+    $result = $this->connection->query("SELECT id FROM 0_users WHERE email = '$param' LIMIT 1")->fetch_array();
     
     if ($result && $result['id']) {
       return $result['id'];
@@ -176,7 +176,7 @@ class MnoSsoUser extends MnoSsoBaseUser
       $fullname = "$this->name $this->surname";
       
       // Prepare query
-      $sql = "UPDATE users SET real_name = ?, email = ? WHERE id = ?";
+      $sql = "UPDATE 0_users SET real_name = ?, email = ? WHERE id = ?";
      	$stmt = $this->connection->prepare($sql);
      	$stmt->bind_param("ssi", 
      	  $fullname,
@@ -202,7 +202,7 @@ class MnoSsoUser extends MnoSsoBaseUser
   {
     if($this->local_id) {
       // Prepare query
-      $sql = "UPDATE users SET mno_uid = ? WHERE id = ?";
+      $sql = "UPDATE 0_users SET mno_uid = ? WHERE id = ?";
      	$stmt = $this->connection->prepare($sql);
      	$stmt->bind_param("si", 
      	  $this->uid,
