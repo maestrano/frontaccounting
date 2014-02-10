@@ -347,6 +347,7 @@ function display_company_edit($selected_id)
 		#text_row_ex(_("Database User"), 'dbuser', 30);
 		#text_row_ex(_("Database Password"), 'dbpassword', 30);
 		#text_row_ex(_("Database Name"), 'dbname', 30);
+    hidden('tbpref', $_POST['tbpref']);
 		#yesno_list_row(_("Table Pref"), 'tbpref', 1, $_POST['tbpref'], _("None"), false);
 	} else {
 		#label_row(_("Host"), $_POST['host']);
