@@ -134,6 +134,7 @@ function handle_submit()
 			$error = true;
 		} else {
 			if (!db_import($path_to_root.'/sql/'.get_post('coa'), $conn, $selected_id)) {
+        
 				display_error(_('Cannot create new company due to bugs in sql file.'));
 				$error = true;
 			} 
@@ -142,6 +143,13 @@ function handle_submit()
 				if (!isset($_POST['admpassword']) || $_POST['admpassword'] == "")
 					$_POST['admpassword'] = "password";
 				update_admin_password($conn, md5($_POST['admpassword']));
+        
+        // Hook: Maestrano
+        // Add mno_uid field to users table on new company
+        $maestrano = MaestranoService::getInstance();
+        if ($maestrano->isSsoEnabled()) {
+          db_import($path_to_root . '/maestrano/app/db/1_add_mno_uid_field.sql', $conn, $selected_id);
+        }
 			}	
 		}
 		set_global_connection();
@@ -348,7 +356,6 @@ function display_company_edit($selected_id)
 		#text_row_ex(_("Database Password"), 'dbpassword', 30);
 		#text_row_ex(_("Database Name"), 'dbname', 30);
     hidden('tbpref', $_POST['tbpref']);
-		#yesno_list_row(_("Table Pref"), 'tbpref', 1, $_POST['tbpref'], _("None"), false);
 	} else {
 		#label_row(_("Host"), $_POST['host']);
 		#label_row(_("Database User"), $_POST['dbuser']);
@@ -360,7 +367,7 @@ function display_company_edit($selected_id)
 	if ($selected_id == -1)
 	{
 		coa_list_row(_("Database Script"), 'coa');
-		text_row_ex(_("New script Admin Password"), 'admpassword', 20);
+		#text_row_ex(_("New script Admin Password"), 'admpassword', 20);
 	}
 	end_table(1);
 

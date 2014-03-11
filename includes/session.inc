@@ -443,9 +443,9 @@ if (strstr($_SERVER['PHP_SELF'], 'logout.php') == false){
 	  
 	  // Hook:Maestrano
     // Redirect to SSO login
-    if ($maestrano->isSsoEnabled()) {
-      header("Location: " . $maestrano->getSsoInitUrl());
-    }
+    // if ($maestrano->isSsoEnabled()) {
+    //   header("Location: " . $maestrano->getSsoInitUrl());
+    // }
     
 		// Show login screen
 		if (!isset($_POST["user_name_entry_field"]) or $_POST["user_name_entry_field"] == "")
@@ -454,6 +454,12 @@ if (strstr($_SERVER['PHP_SELF'], 'logout.php') == false){
 			$_SESSION['timeout'] = array( 'uri'=>preg_replace('/JsHttpRequest=(?:(\d+)-)?([^&]+)/s',
 					'', @htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES, $_SESSION['language']->encoding)), 
 				'post' => $_POST);
+        
+      // Hook:Maestrano
+      // Set login form post action
+      if ($maestrano->isSsoEnabled()) {
+        $_SESSION['timeout']['uri'] = $maestrano->getSsoInitUrl();
+      }
 
 			include($path_to_root . "/access/login.php");
 			if (in_ajax())

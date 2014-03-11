@@ -40,5 +40,17 @@ if ($db_connections && $db_connections[0]) {
 // Set the frontaccounting session name
 $session_name = 'FA' . md5(dirname(MY_APP_DIR . "/includes/session.inc"));
 session_name($session_name);
+session_start();
+
+// If POST then put it in session (access via index.php)
+// If $_SESSION then put it in opts (access via consume.php)
+if ($_POST['company_login_name']) {
+  $_SESSION['company_login_name'] = $_POST['company_login_name'];
+}
+
+if ($_SESSION['company_login_name']) {
+  $opts['company_id'] = $_SESSION['company_login_name'];
+}
+
 
 

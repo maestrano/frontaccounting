@@ -12,6 +12,17 @@ class MnoSsoUser extends MnoSsoBaseUser
    */
   public $connection = null;
   
+  /**
+   * Company ID
+   * @var integer
+   */
+  public $company_id = null;
+  
+  /**
+   * Company ID
+   * @var integer
+   */
+  public $user_table = null;
   
   /**
    * Extend constructor to inialize app specific objects
@@ -27,6 +38,13 @@ class MnoSsoUser extends MnoSsoBaseUser
     
     // Assign new attributes
     $this->connection = $opts['db_connection'];
+    
+    # Below is 0 if $opts['company_id'] is null
+    # which is the default company
+    $this->company_id = intval($opts['company_id']); 
+    
+    // Set the user table
+    $this->user_table = $this->company_id . '_users';
   }
   
   
@@ -45,15 +63,12 @@ class MnoSsoUser extends MnoSsoBaseUser
       $this->session["language"] = new language('English','C','iso-8859-1','ltr');
     }
     $this->session["wa_current_user"] = new current_user();
-    $this->session["wa_current_user"]->simpleLoginWithoutPassword(0,$this->local_id);
+    $this->session["wa_current_user"]->simpleLoginWithoutPassword($this->company_id,$this->local_id);
     $this->session["wa_current_user"]->ui_mode = 0;
     $this->session["wa_current_user"]->last_act = time();
     $this->session["wa_current_user"]->timeout = null;
     $this->session['IPaddress'] = $_SERVER['REMOTE_ADDR'];
 		$this->session['userAgent'] = $_SERVER['HTTP_USER_AGENT'];
-		//echo $this->session['IPaddress'];
-		//echo '<br/>';
-		//echo $this->session['userAgent'];
     
     return true;
   }
@@ -82,7 +97,7 @@ class MnoSsoUser extends MnoSsoBaseUser
       $rep = 1;
       
       // Prepare query
-      $sql = "INSERT INTO 0_users (user_id, real_name, password, phone, email, role_id, language, pos, print_profile, rep_popup)
+      $sql = "INSERT INTO {$this->user_table} (user_id, real_name, password, phone, email, role_id, language, pos, print_profile, rep_popup)
     		VALUES (?,?,?,?,?,?,?,?,?,?)";
     	$stmt = $this->connection->prepare($sql);
     	$stmt->bind_param("sssssisisi", 
@@ -137,7 +152,7 @@ class MnoSsoUser extends MnoSsoBaseUser
   protected function getLocalIdByUid()
   {
     $param = $this->connection->real_escape_string($this->uid);
-    $result = $this->connection->query("SELECT id FROM 0_users WHERE mno_uid = '$param' LIMIT 1")->fetch_array();
+    $result = $this->connection->query("SELECT id FROM {$this->user_table} WHERE mno_uid = '$param' LIMIT 1")->fetch_array();
     
     if ($result && $result['id']) {
       return $result['id'];
@@ -154,7 +169,7 @@ class MnoSsoUser extends MnoSsoBaseUser
   protected function getLocalIdByEmail()
   {
     $param = $this->connection->real_escape_string($this->email);
-    $result = $this->connection->query("SELECT id FROM 0_users WHERE email = '$param' LIMIT 1")->fetch_array();
+    $result = $this->connection->query("SELECT id FROM {$this->user_table} WHERE email = '$param' LIMIT 1")->fetch_array();
     
     if ($result && $result['id']) {
       return $result['id'];
@@ -176,7 +191,7 @@ class MnoSsoUser extends MnoSsoBaseUser
       $fullname = "$this->name $this->surname";
       
       // Prepare query
-      $sql = "UPDATE 0_users SET real_name = ?, email = ? WHERE id = ?";
+      $sql = "UPDATE {$this->user_table} SET real_name = ?, email = ? WHERE id = ?";
      	$stmt = $this->connection->prepare($sql);
      	$stmt->bind_param("ssi", 
      	  $fullname,
@@ -202,7 +217,7 @@ class MnoSsoUser extends MnoSsoBaseUser
   {
     if($this->local_id) {
       // Prepare query
-      $sql = "UPDATE 0_users SET mno_uid = ? WHERE id = ?";
+      $sql = "UPDATE {$this->user_table} SET mno_uid = ? WHERE id = ?";
      	$stmt = $this->connection->prepare($sql);
      	$stmt->bind_param("si", 
      	  $this->uid,

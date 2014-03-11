@@ -86,12 +86,13 @@ function defaultCompany()
 	if (!$login_timeout)
 		table_section_title(_("Version")." $version   Build $build_version - "._("Login"));
 	$value = $login_timeout ? $_SESSION['wa_current_user']->loginname : ($allow_demo_mode ? "demouser":"");
-
-	text_row(_("User name"), "user_name_entry_field", $value, 20, 30);
-
-	$password = $allow_demo_mode ? "password":"";
-
-	password_row(_("Password:"), 'password', $password);
+  
+  // Hook: Maestrano
+  if (!$maestrano || !$maestrano->isSsoEnabled()) {
+  	text_row(_("User name"), "user_name_entry_field", $value, 20, 30);
+  	$password = $allow_demo_mode ? "password":"";
+  	password_row(_("Password:"), 'password', $password);
+  }
 
 	if ($login_timeout) {
 		hidden('company_login_name', $_SESSION["wa_current_user"]->company);
