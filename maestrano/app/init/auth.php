@@ -10,8 +10,7 @@ require MAESTRANO_ROOT . '/app/init/base.php';
 //-----------------------------------------------
 // Require your app specific files here
 //-----------------------------------------------
-//define('MY_APP_DIR', realpath(MAESTRANO_ROOT . '/../'));
-define('MY_APP_DIR', '/Users/Arnaud/Sites/apps-dev/app-frontaccounting');
+define('MY_APP_DIR', realpath(MAESTRANO_ROOT . '/../'));
 chdir(MY_APP_DIR);
 $path_to_root = MY_APP_DIR;
 require 'config_db.php';
@@ -30,7 +29,7 @@ require 'includes/current_user.inc';
 // Create database connection
 // Implementation notes: 
 // - we assume that only one database was configured
-// - we assume that tables have no prefix
+// - we assume that tables only have prefix 0_
 $opts = array();
 if ($db_connections && $db_connections[0]) {
     $db_config = $db_connections[0];
@@ -41,10 +40,17 @@ if ($db_connections && $db_connections[0]) {
 // Set the frontaccounting session name
 $session_name = 'FA' . md5(dirname(MY_APP_DIR . "/includes/session.inc"));
 session_name($session_name);
-
-// Reset session completely to avoid garbage (undeclared classes)
 session_start();
-session_unset();
-session_destroy();
+
+// If POST then put it in session (access via index.php)
+// If $_SESSION then put it in opts (access via consume.php)
+if ($_POST['company_login_name']) {
+  $_SESSION['company_login_name'] = $_POST['company_login_name'];
+}
+
+if ($_SESSION['company_login_name']) {
+  $opts['company_id'] = $_SESSION['company_login_name'];
+}
+
 
 

@@ -18,7 +18,8 @@ $maestrano = MaestranoService::getInstance();
 if ($maestrano->isSsoEnabled()) {
   session_unset();
   @session_destroy();
-  header("Location: " . $maestrano->getSsoLogoutUrl());
+  header("Location: " . '/');
+  exit;
 }
 
 add_js_file('login.js');
