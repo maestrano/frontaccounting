@@ -38,8 +38,14 @@ function db_query($sql, $err_msg=null)
 	global $db, $show_sql, $sql_trail, $select_trail, $go_debug, $sql_queries, $Ajax,
 		$db_connections, $db_last_inserted_id;
 	
-	// set current db prefix
-	$cur_prefix = $db_connections[$_SESSION["wa_current_user"]->cur_con]['tbpref'];
+	// set current db prefix        
+    $cur_prefix = "";
+        
+    if (isset($_SESSION) && isset($_SESSION["wa_current_user"]->cur_con)) {
+        $cur_prefix = $db_connections[$_SESSION["wa_current_user"]->cur_con]['tbpref'];
+    } else {
+        $cur_prefix = "0_";
+    }
 	$sql = str_replace(TB_PREF, $cur_prefix, $sql);
 
 	if ($show_sql)
@@ -49,9 +55,10 @@ function db_query($sql, $err_msg=null)
 	}
 
 	$result = mysql_query($sql, $db);
+	$db_last_inserted_id = mysql_insert_id($db);
 	
 	if($sql_trail) {
-		$db_last_inserted_id = mysql_insert_id($db);	// preserve in case trail insert is done
+		//$db_last_inserted_id = mysql_insert_id($db);	// preserve in case trail insert is done
 		if ($select_trail || (strstr($sql, 'SELECT') === false)) {
 			mysql_query(
 			"INSERT INTO ".$cur_prefix."sql_trail
@@ -63,10 +70,11 @@ function db_query($sql, $err_msg=null)
 
 	if ($err_msg != null || $go_debug) {
 		$exit = $err_msg != null;
-		if (function_exists('xdebug_call_file'))
+		if (function_exists('xdebug_call_file')) {
 			check_db_error('<br>At file '.xdebug_call_file().':'.xdebug_call_line().':<br>'.$err_msg, $sql, $exit);
-		else
+		} else {
 			check_db_error($err_msg, $sql, $exit);
+		}
 	}
 	return $result;
 }
@@ -154,7 +162,8 @@ function db_insert_id()
 {
 	global $db_last_inserted_id, $sql_trail, $db;
 
-	return $sql_trail ? $db_last_inserted_id : mysql_insert_id($db);
+	//return $sql_trail ? $db_last_inserted_id : mysql_insert_id($db);
+	return $db_last_inserted_id;
 }
 
 function db_num_affected_rows()

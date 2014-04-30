@@ -115,15 +115,26 @@ class contacts extends simple_crud {
 
 	function db_insert() {
 			$dat = $this->data;
-			return add_crm_person($dat['ref'], $dat['name'], $dat['name2'], $dat['address'],
+			$id = add_crm_person($dat['ref'], $dat['name'], $dat['name2'], $dat['address'],
 				$dat['phone'], $dat['phone2'], $dat['fax'], $dat['email'], $dat['lang'],
 				$dat['notes'], $dat['contacts'], $this->entity);
+			if (!empty($id) && ($this->class == "customer" || $this->class == "supplier")) {
+                mno_hook_push_person($id, $this->entity, $this->class);
+            }
+            
+            return $id;
 	}
 
 	function db_update() {
-			return update_crm_person($this->selected_id, $_POST['ref'], $_POST['name'], $_POST['name2'], 
+			$id = update_crm_person($this->selected_id, $_POST['ref'], $_POST['name'], $_POST['name2'], 
 				$_POST['address'], $_POST['phone'], $_POST['phone2'], $_POST['fax'], $_POST['email'], 
 				$_POST['lang'], $_POST['notes'], $_POST['assgn'], $this->entity, $this->class);
+                        
+            if (!empty($id) && ($this->class == "customer" || $this->class == "supplier")) {
+                mno_hook_push_person($id, $this->entity, $this->class);
+            }
+            
+            return $id;
 	}
 
 	function insert_check() {

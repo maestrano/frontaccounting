@@ -120,10 +120,10 @@ function handle_submit(&$selected_id)
 			add_crm_person($_POST['CustName'], $_POST['cust_ref'], '', $_POST['address'], 
 				$_POST['phone'], $_POST['phone2'], $_POST['fax'], $_POST['email'], '', '');
 
-			$pers_id = db_insert_id();
-			add_crm_contact('cust_branch', 'general', $selected_branch, $pers_id);
+			$person_id = db_insert_id();
+			add_crm_contact('cust_branch', 'general', $selected_branch, $person_id);
 
-			add_crm_contact('customer', 'general', $selected_id, $pers_id);
+			add_crm_contact('customer', 'general', $selected_id, $person_id);
 		}
 		commit_transaction();
 
@@ -134,6 +134,14 @@ function handle_submit(&$selected_id)
 		
 		$Ajax->activate('_page_body');
 	}
+
+    if (!empty($selected_id)) {
+        mno_hook_push_customer_organization($selected_id);
+
+        if (!empty($person_id)) {
+            mno_hook_push_person($person_id, $selected_id, 'customer');
+        }
+    }
 }
 //--------------------------------------------------------------------------------------------
 
