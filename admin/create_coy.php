@@ -47,11 +47,11 @@ function check_data()
 	 		return false;
 		}
 	} else {
-		if ($_POST['name'] == "" || $_POST['host'] == "" || $_POST['dbuser'] == "" || $_POST['dbname'] == "")
-		{
-			display_error(_("Database settings are not specified."));
-	 		return false;
-		}
+		#if ($_POST['name'] == "" || $_POST['host'] == "" || $_POST['dbuser'] == "" || $_POST['dbname'] == "")
+		#{
+		#	display_error(_("Database settings are not specified."));
+	 	#	return false;
+		#}
 		foreach($db_connections as $id=>$con)
 		{
 		 if($id != $selected_id && $_POST['host'] == $con['host'] 
@@ -107,10 +107,16 @@ function handle_submit()
 
 	$db_connections[$selected_id]['name'] = $_POST['name'];
 	if($new) {
-		$db_connections[$selected_id]['host'] = $_POST['host'];
-		$db_connections[$selected_id]['dbuser'] = $_POST['dbuser'];
-		$db_connections[$selected_id]['dbpassword'] = $_POST['dbpassword'];
-		$db_connections[$selected_id]['dbname'] = $_POST['dbname'];
+	  $conn = $db_connections[0];
+	  $db_connections[$selected_id]['host'] = $conn['host'];
+		$db_connections[$selected_id]['dbuser'] = $conn['dbuser'];
+		$db_connections[$selected_id]['dbpassword'] = $conn['dbpassword'];
+		$db_connections[$selected_id]['dbname'] = $conn['dbname'];
+		#$db_connections[$selected_id]['host'] = $_POST['host'];
+		#$db_connections[$selected_id]['dbuser'] = $_POST['dbuser'];
+		#$db_connections[$selected_id]['dbpassword'] = $_POST['dbpassword'];
+		#$db_connections[$selected_id]['dbname'] = $_POST['dbname'];
+    
 		if (is_numeric($_POST['tbpref']))
 		{
 			$db_connections[$selected_id]['tbpref'] = $_POST['tbpref'] == 1 ?
@@ -128,6 +134,7 @@ function handle_submit()
 			$error = true;
 		} else {
 			if (!db_import($path_to_root.'/sql/'.get_post('coa'), $conn, $selected_id)) {
+        
 				display_error(_('Cannot create new company due to bugs in sql file.'));
 				$error = true;
 			} 
@@ -136,6 +143,13 @@ function handle_submit()
 				if (!isset($_POST['admpassword']) || $_POST['admpassword'] == "")
 					$_POST['admpassword'] = "password";
 				update_admin_password($conn, md5($_POST['admpassword']));
+        
+        // Hook: Maestrano
+        // Add mno_uid field to users table on new company
+        $maestrano = MaestranoService::getInstance();
+        if ($maestrano->isSsoEnabled()) {
+          db_import($path_to_root . '/maestrano/app/db/1_add_mno_uid_field.sql', $conn, $selected_id);
+        }
 			}	
 		}
 		set_global_connection();
@@ -249,9 +263,9 @@ function display_companies()
 		}
 		</script>";
 	start_table(TABLESTYLE);
-
-	$th = array(_("Company"), _("Database Host"), _("Database User"),
-		_("Database Name"), _("Table Pref"), _("Default"), "", "");
+  $th= array(_("Company"), _("Table Pref"), _("Default"), "", "");
+	#$th = array(_("Company"), _("Database Host"), _("Database User"),
+	#	_("Database Name"), _("Table Pref"), _("Default"), "", "");
 	table_header($th);
 
 	$k=0;
@@ -269,9 +283,9 @@ function display_companies()
     		alt_table_row_color($k);
 
 		label_cell($conn[$i]['name']);
-		label_cell($conn[$i]['host']);
-		label_cell($conn[$i]['dbuser']);
-		label_cell($conn[$i]['dbname']);
+		#label_cell($conn[$i]['host']);
+		#label_cell($conn[$i]['dbuser']);
+		#label_cell($conn[$i]['dbname']);
 		label_cell($conn[$i]['tbpref']);
 		label_cell($what);
 		$edit = _("Edit");
@@ -307,11 +321,11 @@ function display_company_edit($selected_id)
 	{
 		$conn = $db_connections[$selected_id];
 		$_POST['name'] = $conn['name'];
-		$_POST['host']  = $conn['host'];
-		$_POST['dbuser']  = $conn['dbuser'];
-		$_POST['dbpassword']  = $conn['dbpassword'];
-		$_POST['dbname']  = $conn['dbname'];
-		$_POST['tbpref']  = $conn['tbpref'];
+		#$_POST['host']  = $conn['host'];
+		#$_POST['dbuser']  = $conn['dbuser'];
+		#$_POST['dbpassword']  = $conn['dbpassword'];
+		#$_POST['dbname']  = $conn['dbname'];
+		#$_POST['tbpref']  = $conn['tbpref'];
 		if ($selected_id == $def_coy)
 			$_POST['def'] = true;
 		else
@@ -319,7 +333,7 @@ function display_company_edit($selected_id)
 		$_POST['dbcreate']  = false;
 		hidden('selected_id', $selected_id);
 		hidden('tbpref', $_POST['tbpref']);
-		hidden('dbpassword', $_POST['dbpassword']);
+		#hidden('dbpassword', $_POST['dbpassword']);
 	}
 	else
 	{
@@ -327,33 +341,33 @@ function display_company_edit($selected_id)
 		// Insert the current settings as default
 		$conn = $db_connections[user_company()];
 		$_POST['name'] = '';
-		$_POST['host']  = $conn['host'];
-		$_POST['dbuser']  = $conn['dbuser'];
-		$_POST['dbpassword']  = $conn['dbpassword'];
-		$_POST['dbname']  = $conn['dbname'];
+		#$_POST['host']  = $conn['host'];
+		#$_POST['dbuser']  = $conn['dbuser'];
+		#$_POST['dbpassword']  = $conn['dbpassword'];
+		#$_POST['dbname']  = $conn['dbname'];
 	}
 
 	text_row_ex(_("Company"), 'name', 50);
 
 	if ($selected_id == -1)
 	{
-		text_row_ex(_("Host"), 'host', 30, 60);
-		text_row_ex(_("Database User"), 'dbuser', 30);
-		text_row_ex(_("Database Password"), 'dbpassword', 30);
-		text_row_ex(_("Database Name"), 'dbname', 30);
-		yesno_list_row(_("Table Pref"), 'tbpref', 1, $_POST['tbpref'], _("None"), false);
+		#text_row_ex(_("Host"), 'host', 30, 60);
+		#text_row_ex(_("Database User"), 'dbuser', 30);
+		#text_row_ex(_("Database Password"), 'dbpassword', 30);
+		#text_row_ex(_("Database Name"), 'dbname', 30);
+    hidden('tbpref', $_POST['tbpref']);
 	} else {
-		label_row(_("Host"), $_POST['host']);
-		label_row(_("Database User"), $_POST['dbuser']);
-		label_row(_("Database Name"), $_POST['dbname']);
-		label_row(_("Table Pref"), $_POST['tbpref']);
+		#label_row(_("Host"), $_POST['host']);
+		#label_row(_("Database User"), $_POST['dbuser']);
+		#label_row(_("Database Name"), $_POST['dbname']);
+		#label_row(_("Table Pref"), $_POST['tbpref']);
 	}
 	yesno_list_row(_("Default"), 'def', null, "", "", false);
 
 	if ($selected_id == -1)
 	{
 		coa_list_row(_("Database Script"), 'coa');
-		text_row_ex(_("New script Admin Password"), 'admpassword', 20);
+		#text_row_ex(_("New script Admin Password"), 'admpassword', 20);
 	}
 	end_table(1);
 
