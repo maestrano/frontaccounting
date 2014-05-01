@@ -12,6 +12,16 @@
 $page_security = 'SA_OPEN';
 $path_to_root="..";
 include($path_to_root . "/includes/session.inc");
+
+// Hook:Maestrano
+$maestrano = MaestranoService::getInstance();
+if ($maestrano->isSsoEnabled()) {
+  session_unset();
+  @session_destroy();
+  header("Location: " . '/');
+  exit;
+}
+
 add_js_file('login.js');
 
 include($path_to_root . "/includes/page/header.inc");

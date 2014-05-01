@@ -2048,7 +2048,7 @@ CREATE TABLE IF NOT EXISTS `0_users` (
   `date_sep` tinyint(1) NOT NULL default '0',
   `tho_sep` tinyint(1) NOT NULL default '0',
   `dec_sep` tinyint(1) NOT NULL default '0',
-  `theme` varchar(20) NOT NULL default 'default',
+  `theme` varchar(20) NOT NULL default 'dynamic',
   `page_size` varchar(20) NOT NULL default 'A4',
   `prices_dec` smallint(6) NOT NULL default '2',
   `qty_dec` smallint(6) NOT NULL default '2',
@@ -2074,7 +2074,7 @@ CREATE TABLE IF NOT EXISTS `0_users` (
 -- Dumping data for table `0_users`
 --
 
-INSERT INTO `0_users` VALUES(1, 'admin', '5f4dcc3b5aa765d61d8327deb882cf99', 'Administrator', 2, '', 'adm@adm.com', 'en_US', 0, 0, 0, 0, 'default', 'Letter', 2, 2, 4, 1, 1, 0, 0, '2008-04-04 12:34:29', 10, 1, 1, '1', 1, 0, 'orders', 0);
+INSERT INTO `0_users` VALUES(1, 'admin', '5f4dcc3b5aa765d61d8327deb882cf99', 'Administrator', 2, '', 'adm@adm.com', 'en_US', 0, 0, 0, 0, 'dynamic', 'Letter', 2, 2, 4, 1, 1, 0, 0, '2008-04-04 12:34:29', 10, 1, 1, '1', 1, 0, 'orders', 0);
 
 -- --------------------------------------------------------
 

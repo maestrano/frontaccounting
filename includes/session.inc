@@ -9,6 +9,9 @@
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 	See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
 ***********************************************************************/
+// Hook:Maestrano
+// Load Maestrano
+require $path_to_root . '/maestrano/app/init/base.php';
 
 class SessionManager
 {
@@ -27,7 +30,17 @@ class SessionManager
 			session_set_cookie_params($limit, $path, $domain, $https, true);
 
 		session_start();
-
+    
+    // Hook:Maestrano
+    // Require authentication straight away if intranet
+    // mode enabled
+    $maestrano = MaestranoService::getInstance();
+    if ($maestrano->isSsoIntranetEnabled()) {
+      if (!$maestrano->getSsoSession()->isValid()) {
+        header("Location: " . $maestrano->getSsoInitUrl());
+      }
+    }
+    
 		// Make sure the session hasn't expired, and destroy it if it has
 		if ($this->validateSession())
 		{
@@ -420,9 +433,20 @@ if (strstr($_SERVER['PHP_SELF'], 'logout.php') == false){
 		include_once($path_to_root . '/company/'.user_company().'/installed_extensions.php');
 
 	install_hooks();
-
+	
+	// Hook:Maestrano
+  // Get service
+  $maestrano = MaestranoService::getInstance();
+  
 	if (!$_SESSION["wa_current_user"]->logged_in())
 	{
+	  
+	  // Hook:Maestrano
+    // Redirect to SSO login
+    // if ($maestrano->isSsoEnabled()) {
+    //   header("Location: " . $maestrano->getSsoInitUrl());
+    // }
+    
 		// Show login screen
 		if (!isset($_POST["user_name_entry_field"]) or $_POST["user_name_entry_field"] == "")
 		{
@@ -430,6 +454,12 @@ if (strstr($_SERVER['PHP_SELF'], 'logout.php') == false){
 			$_SESSION['timeout'] = array( 'uri'=>preg_replace('/JsHttpRequest=(?:(\d+)-)?([^&]+)/s',
 					'', @htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES, $_SESSION['language']->encoding)), 
 				'post' => $_POST);
+        
+      // Hook:Maestrano
+      // Set login form post action
+      if ($maestrano->isSsoEnabled()) {
+        $_SESSION['timeout']['uri'] = $maestrano->getSsoInitUrl();
+      }
 
 			include($path_to_root . "/access/login.php");
 			if (in_ajax())
@@ -467,6 +497,15 @@ if (strstr($_SERVER['PHP_SELF'], 'logout.php') == false){
 			$lang->set_language($_SESSION['language']->code);
 		}
 	} else
+	  
+	  // Hook:Maestrano
+    // Check Maestrano session is still valid
+    if ($maestrano->isSsoEnabled()) {
+      if (!$maestrano->getSsoSession()->isValid()) {
+        header("Location: " . $maestrano->getSsoInitUrl());
+      }
+    }
+	  
 		set_global_connection();
 
 	if (!isset($_SESSION["App"])) {
