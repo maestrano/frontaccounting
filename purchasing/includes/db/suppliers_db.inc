@@ -10,11 +10,17 @@
     See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
 ***********************************************************************/
 
+if (!defined('MAESTRANO_ROOT')) {
+  define("MAESTRANO_ROOT", realpath(dirname(__FILE__) . '/../../'));
+}
+
 function add_supplier($supp_name, $supp_ref, $address, $supp_address, $gst_no,
 	$website, $supp_account_no, $bank_account, $credit_limit, $dimension_id, $dimension2_id, 
 	$curr_code, $payment_terms, $payable_account, $purchase_account, $payment_discount_account, 
 	$notes, $tax_group_id, $tax_included)
 {
+    global $db_last_inserted_id;
+    
 	$sql = "INSERT INTO ".TB_PREF."suppliers (supp_name, supp_ref, address, supp_address, gst_no, website,
 		supp_account_no, bank_account, credit_limit, dimension_id, dimension2_id, curr_code,
 		payment_terms, payable_account, purchase_account, payment_discount_account, notes, 
@@ -40,12 +46,13 @@ function add_supplier($supp_name, $supp_ref, $address, $supp_address, $gst_no,
 		.db_escape($tax_included). ")";
 
 	db_query($sql,"The supplier could not be added");
+    return $db_last_inserted_id;
 }
 
 function update_supplier($supplier_id, $supp_name, $supp_ref, $address, $supp_address, $gst_no, 
 	$website, $supp_account_no, $bank_account, $credit_limit, $dimension_id, $dimension2_id, 
 	$curr_code, $payment_terms, $payable_account, $purchase_account, $payment_discount_account, 
-	$notes, $tax_group_id, $tax_included)
+	$notes, $tax_group_id, $tax_included, $push_to_maestrano=true)
 {
 	$sql = "UPDATE ".TB_PREF."suppliers SET supp_name=".db_escape($supp_name) . ",
 		supp_ref=".db_escape($supp_ref) . ",
@@ -73,8 +80,23 @@ function update_supplier($supplier_id, $supp_name, $supp_ref, $address, $supp_ad
 
 function delete_supplier($supplier_id)
 {
+    global $opts;
+	
 	$sql="DELETE FROM ".TB_PREF."suppliers WHERE supplier_id=".db_escape($supplier_id);
 	db_query($sql,"check failed");
+	
+	try {
+        // Get Maestrano Service
+        $maestrano = MaestranoService::getInstance();
+
+        // DISABLED DELETE NOTIFICATIONS
+        if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {
+            $mno_org=new MnoSoaOrganizationSupplier($opts['db_connection'], new MnoSoaBaseLogger());
+            $mno_org->sendDeleteNotification($supplier_id);
+        }
+    } catch (Exception $ex) {
+
+    }
 }
 
 function get_supplier_details($supplier_id, $to=null, $all=true)

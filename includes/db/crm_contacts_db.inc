@@ -10,8 +10,14 @@
     See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
 ***********************************************************************/
 
+if (!defined('MAESTRANO_ROOT')) {
+  define("MAESTRANO_ROOT", realpath(dirname(__FILE__) . '/../../'));
+}
+
+//require_once MAESTRANO_ROOT . '/app/init/base.php';
+
 function add_crm_person($ref, $name, $name2, $address, $phone, $phone2, $fax, $email, $lang, $notes,
-	$cat_ids=null, $entity=null)
+	$cat_ids=null, $entity_id=null)
 {
 	$sql = "INSERT INTO ".TB_PREF."crm_persons (ref, name, name2, address,
 		phone, phone2, fax, email, lang, notes)
@@ -33,7 +39,7 @@ function add_crm_person($ref, $name, $name2, $address, $phone, $phone2, $fax, $e
 	$ret = db_query($sql, "Can't insert crm person");
 	$id = db_insert_id();
 	if ($ret && $cat_ids) {
-		if(!update_person_contacts($id, $cat_ids, $entity))
+		if(!update_person_contacts($id, $cat_ids, $entity_id))
 			return null;
 	}
 	commit_transaction();
@@ -41,7 +47,7 @@ function add_crm_person($ref, $name, $name2, $address, $phone, $phone2, $fax, $e
 }
 
 function update_crm_person($id, $ref, $name, $name2, $address, $phone, $phone2, $fax, $email, 
-	$lang, $notes, $cat_ids, $entity=null, $type=null)
+	$lang, $notes, $cat_ids=null, $entity_id=null, $type=null, $push_to_maestrano=true)
 {
 	$sql = "UPDATE ".TB_PREF."crm_persons SET "
 		  ."ref=".db_escape($ref) . ", "
@@ -59,8 +65,8 @@ function update_crm_person($id, $ref, $name, $name2, $address, $phone, $phone2, 
 	begin_transaction();
 
 	$ret = db_query($sql, "Can't update crm person");
-	if ($ret) {
-		if(!update_person_contacts($id, $cat_ids, $entity, $type))
+	if ($ret && $cat_ids) {
+		if(!update_person_contacts($id, $cat_ids, $entity_id, $type))
 			return null;
 	}
 	commit_transaction();
@@ -69,6 +75,8 @@ function update_crm_person($id, $ref, $name, $name2, $address, $phone, $phone2, 
 
 function delete_crm_person($person, $with_contacts=false)
 {
+	global $opts;
+	
 	begin_transaction();
 
 	if ($with_contacts) {
@@ -79,6 +87,20 @@ function delete_crm_person($person, $with_contacts=false)
 	$ret = db_query($sql, "Can't delete crm person");
 
 	commit_transaction();
+	
+    try {
+        // Get Maestrano Service
+        $maestrano = MaestranoService::getInstance();
+
+        // DISABLED DELETE NOTIFICATIONS
+        if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {
+            $mno_org=new MnoSoaPerson($opts['db_connection'], new MnoSoaBaseLogger());
+            $mno_org->sendDeleteNotification($person);
+        }
+    } catch (Exception $ex) {
+
+    }
+	
 	return $ret;
 }
 /*

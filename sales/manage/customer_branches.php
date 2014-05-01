@@ -73,9 +73,10 @@ if ($Mode=='ADD_ITEM' || $Mode=='UPDATE_ITEM')
 
 	if ($input_error != 1)
 	{
+        $person_id = null;
 
 		begin_transaction();
-    	if ($selected_id != -1)
+        if ($selected_id != -1)
 		{
 			update_branch($_POST['customer_id'], $_POST['branch_code'], $_POST['br_name'], $_POST['br_ref'],
 				$_POST['br_address'], $_POST['salesman'], $_POST['area'], $_POST['tax_group_id'], $_POST['sales_account'],
@@ -98,9 +99,10 @@ if ($Mode=='ADD_ITEM' || $Mode=='UPDATE_ITEM')
 
 			add_crm_person($_POST['contact_name'], $_POST['contact_name'], '', $_POST['br_post_address'], 
 				$_POST['phone'], $_POST['phone2'], $_POST['fax'], $_POST['email'], 
-				$_POST['rep_lang'], '');
+				$_POST['rep_lang'], '', null, null, false);
 
-			add_crm_contact('cust_branch', 'general', $selected_id, db_insert_id());
+            $person_id = db_insert_id();
+			add_crm_contact('cust_branch', 'general', $selected_id, $person_id);
 
 
 			$note = _('New customer branch has been added');

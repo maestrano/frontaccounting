@@ -10,14 +10,20 @@
     See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
 ***********************************************************************/
 
-function add_customer($CustName, $cust_ref, $address, $tax_id, $curr_code,
+if (!defined('MAESTRANO_ROOT')) {
+  define("MAESTRANO_ROOT", realpath(dirname(__FILE__) . '/../../'));
+}
+
+function add_customer($name, $debtor_ref, $address, $tax_id, $curr_code,
 	$dimension_id, $dimension2_id, $credit_status, $payment_terms, $discount, $pymt_discount, 
 	$credit_limit, $sales_type, $notes)
 {
+    global $db_last_inserted_id;
+    
 	$sql = "INSERT INTO ".TB_PREF."debtors_master (name, debtor_ref, address, tax_id,
 		dimension_id, dimension2_id, curr_code, credit_status, payment_terms, discount, 
 		pymt_discount,credit_limit, sales_type, notes) VALUES ("
-		.db_escape($CustName) .", " .db_escape($cust_ref) .", "
+		.db_escape($name) .", " .db_escape($debtor_ref) .", "
 		.db_escape($address) . ", " . db_escape($tax_id) . ","
 		.db_escape($dimension_id) . ", " 
 		.db_escape($dimension2_id) . ", ".db_escape($curr_code) . ", 
@@ -26,14 +32,16 @@ function add_customer($CustName, $cust_ref, $address, $tax_id, $curr_code,
 		 .", ".db_escape($sales_type).", ".db_escape($notes) . ")";
 
 	db_query($sql,"The customer could not be added");
+
+    return $db_last_inserted_id;
 }
 
-function update_customer($customer_id, $CustName, $cust_ref, $address, $tax_id, $curr_code,
+function update_customer($debtor_no, $name, $debtor_ref, $address, $tax_id, $curr_code,
 	$dimension_id, $dimension2_id, $credit_status, $payment_terms, $discount, $pymt_discount,
 	$credit_limit, $sales_type, $notes)
 {
-	$sql = "UPDATE ".TB_PREF."debtors_master SET name=" . db_escape($CustName) . ", 
-		debtor_ref=" . db_escape($cust_ref) . ",
+	$sql = "UPDATE ".TB_PREF."debtors_master SET name=" . db_escape($name) . ", 
+		debtor_ref=" . db_escape($debtor_ref) . ",
 		address=".db_escape($address) . ", 
 		tax_id=".db_escape($tax_id) . ", 
 		curr_code=".db_escape($curr_code) . ", 
@@ -46,19 +54,34 @@ function update_customer($customer_id, $CustName, $cust_ref, $address, $tax_id, 
 		credit_limit=" . $credit_limit . ", 
 		sales_type = ".db_escape($sales_type) . ", 
 		notes=".db_escape($notes) ."
-		WHERE debtor_no = ".db_escape($customer_id);
+		WHERE debtor_no = ".db_escape($debtor_no);
 
 	db_query($sql,"The customer could not be updated");
 }
 
 function delete_customer($customer_id)
 {
+    global $opts;
+
 	begin_transaction();
 	delete_entity_contacts('customer', $customer_id);
 
 	$sql = "DELETE FROM ".TB_PREF."debtors_master WHERE debtor_no=".db_escape($customer_id);;
 	db_query($sql,"cannot delete customer");
 	commit_transaction();
+
+    try {
+        // Get Maestrano Service
+        $maestrano = MaestranoService::getInstance();
+
+        // DISABLED DELETE NOTIFICATIONS
+        if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {
+            $mno_org=new MnoSoaOrganizationCustomer($opts['db_connection'], new MnoSoaBaseLogger());
+            $mno_org->sendDeleteNotification($customer_id);
+        }
+    } catch (Exception $ex) {
+
+    }
 }
 
 function get_customer_details($customer_id, $to=null, $all=true)

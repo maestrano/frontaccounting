@@ -207,6 +207,7 @@ if (isset($_POST['submit']))
 	{
 
 		begin_transaction();
+        $person_id = null;
 		if ($supplier_id) 
 		{
 			update_supplier($_POST['supplier_id'], $_POST['supp_name'], $_POST['supp_ref'], $_POST['address'],
@@ -235,12 +236,21 @@ if (isset($_POST['submit']))
 				$_POST['phone'], $_POST['phone2'], $_POST['fax'], $_POST['email'], 
 				$_POST['rep_lang'], '');
 
-			add_crm_contact('supplier', 'general', $supplier_id, db_insert_id());
+			$person_id = db_insert_id();
+			add_crm_contact('supplier', 'general', $supplier_id, $person_id);
 
 			display_notification(_("A new supplier has been added."));
 			$Ajax->activate('_page_body');
 		}
 		commit_transaction();
+                
+        if (!empty($supplier_id)) {
+            mno_hook_push_supplier_organization($supplier_id);
+
+            if (!empty($person_id)) {
+                mno_hook_push_person($person_id, $supplier_id, 'supplier');
+            }
+        }
 	}
 
 } 
