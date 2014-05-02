@@ -241,9 +241,12 @@ class MnoSoaBasePerson extends MnoSoaBaseEntity
             }
 
             $local_entity_id = $this->getLocalEntityIdentifier();
+            $this->_log->debug(__CLASS__ . " " .__FUNCTION__ . " this->getLocalEntityIdentifier()=" . $this->getLocalEntityIdentifier());
             $mno_entity_id = $this->_id;
-
+            $this->_log->debug(__CLASS__ . " " .__FUNCTION__ . " is_new_id=" . $is_new_id . " local_entity_id=" . $local_entity_id . " mno_entity_id=" . $mno_entity_id);
+            
             if ($is_new_id && !empty($local_entity_id) && !empty($mno_entity_id)) {
+                $this->_log->debug(__CLASS__ . " " .__FUNCTION__ . " before add id map entry");
                 $this->addIdMapEntry($local_entity_id, $mno_entity_id);
             }
         }
