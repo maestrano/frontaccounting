@@ -237,7 +237,7 @@ class MnoSoaBaseOrganization extends MnoSoaBaseEntity
             }
 
             $local_entity_id = $this->getLocalEntityIdentifier();
-            $this->_log->debug(__FUNCTION__ . " this->getLocalEntityIdentifier()=" . $this->getLocalEntityIdentifier());
+            $this->_log->debug(__CLASS__ . " " .__FUNCTION__ . " this->getLocalEntityIdentifier()=" . $this->getLocalEntityIdentifier());
             $mno_entity_id = $this->_id;
             
             if ($is_new_id && !empty($local_entity_id) && !empty($mno_entity_id)) {

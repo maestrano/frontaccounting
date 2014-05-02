@@ -289,7 +289,8 @@ class MnoSoaPerson extends MnoSoaBasePerson
         $this->_log->debug(__CLASS__ . '.' . __FUNCTION__ . " start ");
         $this->_log->debug(__CLASS__ . '.' . __FUNCTION__ . " local_entity=".json_encode($this->_local_entity));
         if ($status == constant('MnoSoaBaseEntity::STATUS_NEW_ID')) {
-            MnoSoaPerson::add_crm_person_by_array($this->_local_entity, $push_to_maestrano);
+            $id = MnoSoaPerson::add_crm_person_by_array($this->_local_entity, $push_to_maestrano);
+            $this->setLocalEntityIdentifier($id);
         } else if ($status == constant('MnoSoaBaseEntity::STATUS_EXISTING_ID')) {
             MnoSoaPerson::update_crm_person_by_array($this->_local_entity, $push_to_maestrano);
         }
@@ -340,7 +341,7 @@ class MnoSoaPerson extends MnoSoaBasePerson
                 if (empty($result)) { return false; }
             }
             
-            return true;
+            return $person_id;
     }
 
     private function update_crm_person_by_array($arr, $push_to_maestrano=true)

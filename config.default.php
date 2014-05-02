@@ -78,7 +78,7 @@ if (!isset($path_to_root) || isset($_GET['path_to_root']) || isset($_POST['path_
 	$use_icon_for_editkey = 0;
 
 	/* Creates automatic a default branch with contact. Value 0 do not create auto branch */
-	$auto_create_branch = 1;
+	$auto_create_branch = 0;
 
 	/* Save Report selections (a value > 0 means days to save. 0 = no save) */
 	$save_report_selections = 0;
