@@ -138,6 +138,8 @@ function handle_submit(&$selected_id)
     if (!empty($selected_id)) {
         mno_hook_push_customer_organization($selected_id);
 
+        sleep(5);
+
         if (!empty($person_id)) {
             mno_hook_push_person($person_id, $selected_id, 'customer');
         }

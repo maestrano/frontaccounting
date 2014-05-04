@@ -247,6 +247,8 @@ if (isset($_POST['submit']))
         if (!empty($supplier_id)) {
             mno_hook_push_supplier_organization($supplier_id);
 
+            sleep(5);
+
             if (!empty($person_id)) {
                 mno_hook_push_person($person_id, $supplier_id, 'supplier');
             }
