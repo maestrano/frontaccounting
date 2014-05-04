@@ -48,6 +48,7 @@ function mno_hook_push_supplier_organization($supplier_id)
                     }
 
                     if(!empty($customer_id)) {
+                        $mno_request_message->id = $mno_response_id;
                         $mno_org=new MnoSoaOrganizationCustomer($opts['db_connection'], new MnoSoaBaseLogger());
                         $mno_org->receive($mno_request_message);
                     }
@@ -87,6 +88,7 @@ function mno_hook_push_customer_organization($customer_id)
                     }
 
                     if(!empty($supplier_id)) {
+                        $mno_request_message->id = $mno_response_id;
                         $mno_org=new MnoSoaOrganizationCustomer($opts['db_connection'], new MnoSoaBaseLogger());
                         $mno_org->receive($mno_request_message);
                     }
