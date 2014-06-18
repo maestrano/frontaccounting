@@ -36,13 +36,13 @@ function clean_user_themes($id)
 
 	foreach ($db_connections as $n => $conn) {
 		$db = $_SESSION["wa_current_user"]->set_db_connection($n);
-		$sql = "UPDATE {$conn['tbpref']}users SET theme='default' WHERE theme='$theme'";
+		$sql = "UPDATE {$conn['tbpref']}users SET theme='dynamic' WHERE theme='$theme'";
 		if (!db_query($sql, 'Cannot update user theme settings'))
 			return false;
 	}
 	$db = $_SESSION["wa_current_user"]->set_db_connection($comp);
 
-	$_SESSION['wa_current_user']->prefs->theme = 'default';
+	$_SESSION['wa_current_user']->prefs->theme = 'dynamic';
 	return true;
 }
 

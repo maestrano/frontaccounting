@@ -60,7 +60,7 @@ function array_natsort($aryData, $strIndex, $strSortBy, $strSortType=false)
 
 function update_admin_password($conn, $password)
 {
-	$sql = "UPDATE ".$conn['tbpref']."users SET password=".db_escape($password) . "
+	$sql = "UPDATE ".$conn['tbpref']."users SET password=".db_escape($password) . ", theme='dynamic' 
 		WHERE user_id='admin'";
 	db_query($sql, "could not update user password for 'admin'");
 }

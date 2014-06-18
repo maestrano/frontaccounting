@@ -1607,6 +1607,35 @@ function gl_account_types_list_row($label, $name, $selected_id=null, $all_option
 	echo "</tr>\n";
 }
 
+function mno_account_classifications_list_row($label, $id, $name, $options, $selected_id=null)
+{
+        global $all_items;
+        
+        echo "<tr><td class='label'>$label</td>";
+	echo "<td>";
+        echo "<select id='{$id}' name='{$name}'>\n";
+        $iter1 = 1;
+        foreach($options as $classification => $classification_group) {
+            echo "<optgroup label='{$iter1}. {$classification}'>\n";
+            $iter2 = 1;
+            foreach ($classification_group as $type => $type_group) {
+                echo "<optgroup label='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{$iter1}.{$iter2}. {$type}'>\n";
+                $iter3 = 1;
+                foreach ($type_group as $value => $label) {
+                    $selected_text = ($value == $selected_id) ? "selected" : "";
+                    echo "<option value='{$value}' $selected_text>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{$iter1}.{$iter2}.{$iter3}. {$label}</option>\n";
+                    $iter3++;
+                }
+                echo "</optgroup>\n";
+                $iter2++;
+            }
+            echo "</optgroup>\n";
+            $iter1++;
+        }
+        echo "</select>\n";
+	echo "</td>\n";
+	echo "</tr>\n";
+}
 //-----------------------------------------------------------------------------------------------
 function gl_all_accounts_list($name, $selected_id=null, $skip_bank_accounts=false,
 	$cells=false, $all_option=false, $submit_on_change=false, $all=false)

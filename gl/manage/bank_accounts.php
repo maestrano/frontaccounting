@@ -17,6 +17,14 @@ page(_($help_context = "Bank Accounts"));
 
 include($path_to_root . "/includes/ui.inc");
 
+$temp_db_config = $db_connections[0];
+$temp_db_name = $temp_db_config["dbname"];
+// check MNO_CLASSIFICATION column exists in BANK_ACCOUNTS table
+if (!check_empty_result("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='{$temp_db_name}' AND TABLE_NAME='".TB_PREF."bank_accounts' AND COLUMN_NAME='biccode'"))
+{
+    $result = db_query("ALTER TABLE ".TB_PREF."bank_accounts ADD `biccode` VARCHAR( 255 ) NOT NULL;");
+}
+
 simple_page_mode();
 //-----------------------------------------------------------------------------------
 
@@ -47,18 +55,20 @@ if ($Mode=='ADD_ITEM' || $Mode=='UPDATE_ITEM')
     		update_bank_account($selected_id, $_POST['account_code'],
 				$_POST['account_type'], $_POST['bank_account_name'], 
 				$_POST['bank_name'], $_POST['bank_account_number'], 
-    			$_POST['bank_address'], $_POST['BankAccountCurrency'],
-    			$_POST['dflt_curr_act']);
-			display_notification(_('Bank account has been updated'));
+                                $_POST['bank_address'], $_POST['BankAccountCurrency'],
+                                $_POST['dflt_curr_act'], $_POST['biccode']);
+		display_notification(_('Bank account has been updated'));
+                mno_hook_push_account($_POST['account_code']);
     	} 
     	else 
     	{
     
     		add_bank_account($_POST['account_code'], $_POST['account_type'], 
 				$_POST['bank_account_name'], $_POST['bank_name'], 
-    			$_POST['bank_account_number'], $_POST['bank_address'], 
-				$_POST['BankAccountCurrency'], $_POST['dflt_curr_act']);
-			display_notification(_('New bank account has been added'));
+                                $_POST['bank_account_number'], $_POST['bank_address'], 
+				$_POST['BankAccountCurrency'], $_POST['dflt_curr_act'], $_POST['biccode']);
+		display_notification(_('New bank account has been added'));
+                mno_hook_push_account($_POST['account_code']);
     	}
  		$Mode = 'RESET';
 	}
@@ -93,7 +103,8 @@ if ($Mode == 'RESET')
 {
  	$selected_id = -1;
 	$_POST['bank_name']  = 	$_POST['bank_account_name']  = '';
-	$_POST['bank_account_number'] = $_POST['bank_address'] = '';
+	$_POST['biccode'] = $_POST['bank_account_number'] = $_POST['bank_address'] = '';
+        
 }
 
 /* Always show the list of accounts */
@@ -104,7 +115,7 @@ start_form();
 start_table(TABLESTYLE, "width='80%'");
 
 $th = array(_("Account Name"), _("Type"), _("Currency"), _("GL Account"), 
-	_("Bank"), _("Number"), _("Bank Address"), _("Dflt"), '','');
+	_("Bank"), _("BIC"), _("Number"), _("Bank Address"), _("Dflt"), '','');
 inactive_control_column($th);
 table_header($th);	
 
@@ -119,6 +130,7 @@ while ($myrow = db_fetch($result))
     label_cell($myrow["bank_curr_code"], "nowrap");
     label_cell($myrow["account_code"] . " " . $myrow["account_name"], "nowrap");
     label_cell($myrow["bank_name"], "nowrap");
+    label_cell($myrow["biccode"], "nowrap");
     label_cell($myrow["bank_account_number"], "nowrap");
     label_cell($myrow["bank_address"]);
     if ($myrow["dflt_curr_act"])
@@ -148,6 +160,7 @@ if ($selected_id != -1)
 	$_POST['account_type'] = $myrow["account_type"];
 	$_POST['bank_name']  = $myrow["bank_name"];
 	$_POST['bank_account_name']  = $myrow["bank_account_name"];
+	$_POST['biccode'] = $myrow["biccode"];
 	$_POST['bank_account_number'] = $myrow["bank_account_number"];
 	$_POST['bank_address'] = $myrow["bank_address"];
 	$_POST['BankAccountCurrency'] = $myrow["bank_curr_code"];
@@ -187,6 +200,7 @@ else
 	gl_all_accounts_list_row(_("Bank Account GL Code:"), 'account_code', null);
 
 text_row(_("Bank Name:"), 'bank_name', null, 50, 60);
+text_row(_("SWIFT/BIC Bank Code:"), 'biccode', null, 30, 60);
 text_row(_("Bank Account Number:"), 'bank_account_number', null, 30, 60);
 textarea_row(_("Bank Address:"), 'bank_address', null, 40, 5);
 

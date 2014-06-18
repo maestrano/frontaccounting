@@ -105,6 +105,8 @@ if ($Mode=='ADD_ITEM' || $Mode=='UPDATE_ITEM')
 		}
 		display_notification($msg);
 		$Mode = 'RESET';
+        
+        mno_hook_push_item($_POST['stock_id']);
 	}
 
 }

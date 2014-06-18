@@ -42,7 +42,7 @@ function defaultCompany()
 	}
 	if (!isset($def_coy))
 		$def_coy = 0;
-	$def_theme = "default";
+	$def_theme = "dynamic";
 
 	$login_timeout = $_SESSION["wa_current_user"]->last_act;
 

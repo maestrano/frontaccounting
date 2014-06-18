@@ -12,7 +12,7 @@
 function update_item($stock_id, $description, $long_description, $category_id, 
 	$tax_type_id, $units='', $mb_flag='', $sales_account, $inventory_account, 
 	$cogs_account, 	$adjustment_account, $assembly_account, $dimension_id, 
-	$dimension2_id, $no_sale, $editable)
+	$dimension2_id, $no_sale, $editable, $ref=null)
 {
 	$sql = "UPDATE ".TB_PREF."stock_master SET long_description=".db_escape($long_description).",
 		description=".db_escape($description).",
@@ -26,7 +26,8 @@ function update_item($stock_id, $description, $long_description, $category_id,
 		dimension2_id=".db_escape($dimension2_id).",
 		tax_type_id=".db_escape($tax_type_id).",
 		no_sale=".db_escape($no_sale).",
-		editable=".db_escape($editable);
+		editable=".db_escape($editable).",
+                ref=".db_escape($ref);
 
 	if ($units != '')
 		$sql .= ", units='$units'";
@@ -44,11 +45,11 @@ function update_item($stock_id, $description, $long_description, $category_id,
 function add_item($stock_id, $description, $long_description, $category_id, 
 	$tax_type_id, $units, $mb_flag,	$sales_account, $inventory_account, 
 	$cogs_account, $adjustment_account,	$assembly_account, $dimension_id, 
-	$dimension2_id, $no_sale, $editable)
+	$dimension2_id, $no_sale, $editable, $ref=null)
 {
 	$sql = "INSERT INTO ".TB_PREF."stock_master (stock_id, description, long_description, category_id,
 		tax_type_id, units, mb_flag, sales_account, inventory_account, cogs_account,
-		adjustment_account, assembly_account, dimension_id, dimension2_id, no_sale, editable)
+		adjustment_account, assembly_account, dimension_id, dimension2_id, no_sale, editable, ref)
 		VALUES (".db_escape($stock_id).", ".db_escape($description).", ".db_escape($long_description).",
 		".db_escape($category_id).", ".db_escape($tax_type_id).", "
 		.db_escape($units).", ".db_escape($mb_flag).",
@@ -57,7 +58,7 @@ function add_item($stock_id, $description, $long_description, $category_id,
 		.", ".db_escape($assembly_account).", "
 		.db_escape($dimension_id).", ".db_escape($dimension2_id).","
 		.db_escape($no_sale).","
-		.db_escape($editable).")";
+		.db_escape($editable).",".db_escape($ref).")";
 
 	db_query($sql, "The item could not be added");
 

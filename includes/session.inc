@@ -224,9 +224,10 @@ function check_page_security($page_security)
 			 _("Security settings have not been defined for your user account.")
 				. "<br>" . _("Please contact your system administrator.")	
 			: _("Please remove \$security_groups and \$security_headings arrays from config.php file!");
-	} elseif (!$_SESSION['SysPrefs']->db_ok && !$_SESSION["wa_current_user"]->can_access('SA_SOFTWAREUPGRADE')) {
+	} 
+/*        elseif (!$_SESSION['SysPrefs']->db_ok && !$_SESSION["wa_current_user"]->can_access('SA_SOFTWAREUPGRADE')) {
 		$msg = _('Access to application has been blocked until database upgrade is completed by system administrator.');
-	}
+	}*/
 	
 	if ($msg){
 		display_error($msg);
@@ -245,14 +246,14 @@ function check_page_security($page_security)
 		end_page(@$_REQUEST['popup']);
 		exit;
 	}
-	if (!$_SESSION['SysPrefs']->db_ok 
+/*	if (!$_SESSION['SysPrefs']->db_ok 
 		&& !in_array($page_security, array('SA_SOFTWAREUPGRADE', 'SA_OPEN', 'SA_BACKUP')))
 	{
 		display_error(_('System is blocked after source upgrade until database is updated on System/Software Upgrade page'));
 		end_page();
 		exit;
 	}
-
+*/
 }
 /*
 	Helper function for setting page security level depeding on 
@@ -394,7 +395,6 @@ if (!isset($_SESSION['language']) || !method_exists($_SESSION['language'], 'set_
 
 $_SESSION['language']->set_language($_SESSION['language']->code);
 
-
 include_once($path_to_root . "/includes/access_levels.inc");
 include_once($path_to_root . "/version.php");
 include_once($path_to_root . "/includes/main.inc");
@@ -501,7 +501,8 @@ if (strstr($_SERVER['PHP_SELF'], 'logout.php') == false){
 	  // Hook:Maestrano
     // Check Maestrano session is still valid
     if ($maestrano->isSsoEnabled()) {
-      if (!$maestrano->getSsoSession()->isValid()) {
+      $ssoSession = $maestrano->getSsoSession();
+      if (!$ssoSession->isValid()) {
         header("Location: " . $maestrano->getSsoInitUrl());
       }
     }

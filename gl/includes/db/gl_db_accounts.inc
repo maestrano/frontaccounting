@@ -9,20 +9,23 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
     See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
 ***********************************************************************/
-function add_gl_account($account_code, $account_name, $account_type, $account_code2)
+function add_gl_account($account_code, $account_name, $account_type, $account_code2, $mno_classification=null)
 {
-	$sql = "INSERT INTO ".TB_PREF."chart_master (account_code, account_code2, account_name, account_type)
+	$sql = "INSERT INTO ".TB_PREF."chart_master (account_code, account_code2, account_name, account_type, mno_classification)
 		VALUES (".db_escape($account_code).", ".db_escape($account_code2).", "
-			.db_escape($account_name).", ".db_escape($account_type).")";
+			.db_escape($account_name).", ".db_escape($account_type).", ".db_escape($mno_classification).")";
 
 	return db_query($sql);
 }
 
-function update_gl_account($account_code, $account_name, $account_type, $account_code2)
+function update_gl_account($account_code, $account_name, $account_type, $account_code2, $mno_classification=null)
 {
-    $sql = "UPDATE ".TB_PREF."chart_master SET account_name=".db_escape($account_name)
-    .",account_type=".db_escape($account_type).", account_code2=".db_escape($account_code2)
-		." WHERE account_code = ".db_escape($account_code);
+        $sql = "UPDATE ".TB_PREF."chart_master SET account_name=".db_escape($account_name)
+        .",account_type=".db_escape($account_type).", account_code2=".db_escape($account_code2);
+        if ($mno_classification !== null) {
+            $sql .= ", mno_classification=".db_escape($mno_classification);
+        }
+        $sql .= " WHERE account_code = ".db_escape($account_code);
 
 	return db_query($sql);
 }

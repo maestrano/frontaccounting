@@ -21,11 +21,15 @@ require_once MNO_PHP_DIR . 'MnoSettings.php';
 require_once MNO_PHP_DIR . 'MaestranoService.php';
 require_once MNO_PHP_DIR . 'sso/MnoSsoBaseUser.php';
 require_once MNO_PHP_DIR . 'sso/MnoSsoSession.php';
-require_once MNO_PHP_DIR . 'soa/MnoSoaBaseLogger.php';
+require_once MNO_PHP_DIR . 'soa/MnoSoaLogger.php';
 require_once MNO_PHP_DIR . 'soa/MnoSoaBaseDB.php';
+require_once MNO_PHP_DIR . 'soa/MnoSoaHelper.php';
 require_once MNO_PHP_DIR . 'soa/MnoSoaBaseEntity.php';
 require_once MNO_PHP_DIR . 'soa/MnoSoaBaseOrganization.php';
 require_once MNO_PHP_DIR . 'soa/MnoSoaBasePerson.php';
+require_once MNO_PHP_DIR . 'soa/MnoSoaBaseAccount.php';
+require_once MNO_PHP_DIR . 'soa/MnoSoaBaseItem.php';
+require_once MNO_PHP_DIR . 'soa/MnoSoaTransformer.php';
 
 //-----------------------------------------------
 // Require Maestrano app files
@@ -37,4 +41,6 @@ require_once MNO_APP_DIR . 'soa/MnoSoaDB.php';
 require_once MNO_APP_DIR . 'soa/MnoSoaOrganizationCustomer.php';
 require_once MNO_APP_DIR . 'soa/MnoSoaOrganizationSupplier.php';
 require_once MNO_APP_DIR . 'soa/MnoSoaPerson.php';
+require_once MNO_APP_DIR . 'soa/MnoSoaAccount.php';
+require_once MNO_APP_DIR . 'soa/MnoSoaItem.php';
 include_once MNO_APP_DIR . 'soa/MnoSoaHook.php';

@@ -66,18 +66,20 @@ if ($Mode=='ADD_ITEM' || $Mode=='UPDATE_ITEM')
 	}
 	if ($input_error == 0)
 	{
-     	if ($Mode == 'ADD_ITEM') 
-       	{
-			add_item_purchasing_data($_POST['supplier_id'], $_POST['stock_id'], input_num('price',0),
-				$_POST['suppliers_uom'], input_num('conversion_factor'), $_POST['supplier_description']);
-    		display_notification(_("This supplier purchasing data has been added."));
-       	} 
-       	else
-       	{
-       		update_item_purchasing_data($selected_id, $_POST['stock_id'], input_num('price',0),
-       			$_POST['suppliers_uom'], input_num('conversion_factor'), $_POST['supplier_description']);
-    	  	display_notification(_("Supplier purchasing data has been updated."));
-       	}
+        if ($Mode == 'ADD_ITEM') 
+        {
+                add_item_purchasing_data($_POST['supplier_id'], $_POST['stock_id'], input_num('price',0),
+                                $_POST['suppliers_uom'], input_num('conversion_factor'), $_POST['supplier_description']);
+                display_notification(_("This supplier purchasing data has been added."));
+        } 
+        else
+        {
+                update_item_purchasing_data($selected_id, $_POST['stock_id'], input_num('price',0),
+                        $_POST['suppliers_uom'], input_num('conversion_factor'), $_POST['supplier_description']);
+                display_notification(_("Supplier purchasing data has been updated."));
+        }
+        
+        mno_hook_push_item($_POST['stock_id']);
 		$Mode = 'RESET';
 	}
 }

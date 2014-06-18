@@ -71,10 +71,11 @@ class current_user
 		// in FA users table anyway to successfully log in.
 		$Auth_Result = hook_authenticate($loginname, $password);
 
-		if (!isset($Auth_Result))	// if not used: standard method
+		if (!isset($Auth_Result)) {	// if not used: standard method
 			$Auth_Result = get_user_auth($loginname, md5($password));
+                }
 
-		if ($login_delay > 0)
+		if ($login_delay > 0) 
 			write_login_filelog($loginname, $Auth_Result);
 
 		if ($Auth_Result)
@@ -329,6 +330,9 @@ function number_format2($number, $decimals=0)
 		$dec = $decimals;
 	}
 
+        if (substr((string) $number, -1) == $dsep) {
+            $number = (int) substr((string) $number, 0, -1);
+        }
 	$num = number_format($number, $dec, $dsep, $tsep);
 
 	return $decimals==='max' ? rtrim($num, '0') : $num;
@@ -514,7 +518,7 @@ function user_dec_sep()
 function user_theme()
 {
 	return isset($_SESSION["wa_current_user"]) ?
-		$_SESSION["wa_current_user"]->prefs->get_theme() : 'default';
+		$_SESSION["wa_current_user"]->prefs->get_theme() : 'dynamic';
 }
 
 function user_pagesize()
