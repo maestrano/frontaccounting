@@ -403,6 +403,8 @@ function display_system_tests($install = false)
 {
 	global $test_level;
 
+        return true;
+        
 	if ($install)
 		$system_tests = array('tst_php', 'tst_phpmysql', 'tst_system', 'tst_dbconfig', 
 			'tst_config',

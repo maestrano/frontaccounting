@@ -46,7 +46,7 @@ if (!isset($path_to_root) || isset($_GET['path_to_root']) || isset($_POST['path_
 				}
 		function get_selected_application()
 		{
-			if (isset($this->selected_application))
+			if (isset($this->selected_application) && array_key_exists($this->selected_application, $this->applications))
 				 return $this->applications[$this->selected_application];
 			foreach ($this->applications as $application)
 				return $application;
@@ -69,21 +69,36 @@ if (!isset($path_to_root) || isset($_GET['path_to_root']) || isset($_POST['path_
 		}
 		function init()
 		{
+            global $path_to_root;
+            include_once($path_to_root . "/config_db.php");
 
 			$this->menu = new menu(_("Main  Menu"));
 			$this->menu->add_item(_("Main  Menu"), "index.php");
 			$this->menu->add_item(_("Logout"), "/account/access/logout.php");
-			$this->applications = array();
-			$this->add_application(new customers_app());
-			$this->add_application(new suppliers_app());
-			$this->add_application(new inventory_app());
-			$this->add_application(new manufacturing_app());
-			$this->add_application(new dimensions_app());
-			$this->add_application(new general_ledger_app());
 
-			hook_invoke_all('install_tabs', $this);
+            $coyno = $_SESSION["wa_current_user"]->company;
+            
+            if ($coyno == 0) {
+                hook_invoke_all('install_tabs', $this);
+                
+                $this->add_application(new setup_app());
+                if ($_GET['application'] != 'system') {
+                    header('Location: ' . $path_to_root . '/admin/create_coy.php');
+                }
+            } else {
+                $this->applications = array();
+                
+                $this->add_application(new customers_app());
+                $this->add_application(new suppliers_app());
+                $this->add_application(new inventory_app());
+                $this->add_application(new manufacturing_app());
+                $this->add_application(new dimensions_app());
+                $this->add_application(new general_ledger_app());
 
-			$this->add_application(new setup_app());
+                hook_invoke_all('install_tabs', $this);
+
+                $this->add_application(new setup_app());
+            }
 		}
 }
 ?>

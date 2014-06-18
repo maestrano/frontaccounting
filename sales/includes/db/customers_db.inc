@@ -76,7 +76,7 @@ function delete_customer($customer_id)
 
         // DISABLED DELETE NOTIFICATIONS
         if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {
-            $mno_org=new MnoSoaOrganizationCustomer($opts['db_connection'], new MnoSoaBaseLogger());
+            $mno_org=new MnoSoaOrganizationCustomer();
             $mno_org->sendDeleteNotification($customer_id);
         }
     } catch (Exception $ex) {

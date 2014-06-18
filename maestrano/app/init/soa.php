@@ -51,3 +51,12 @@ if ($db_connections && $db_connections[0]) {
     $db = $conn;
 }
 
+if ($db_connections && $db_connections[1] && $db_connections[1]['tbpref'] && (!isset($_SESSION) || !isset($_SESSION['wa_current_user']) || !isset($_SESSION['wa_current_user']->cur_con)) ) {
+    error_log("SESSION wa_current_user cur_con = 1");
+    $_SESSION["wa_current_user"]->cur_con = 1;
+}
+
+error_log("db_connections=".json_encode($db_connections));
+error_log("session=".json_encode($_SESSION));
+
+//$db_connections[$_SESSION["wa_current_user"]->cur_con]['tbpref']

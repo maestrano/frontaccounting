@@ -31,6 +31,9 @@ function display_notification_centered($msg)
 
 function display_heading($msg)
 {
+        if (strpos(strtoupper($msg), 'SYSTEM DIAGNOSTICS') !== false) {
+            return;
+        }
 	echo "<center><span class='headingtext'>$msg</span></center>\n";	
 }
 

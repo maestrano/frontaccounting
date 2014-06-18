@@ -44,7 +44,8 @@ class MnoSsoUser extends MnoSsoBaseUser
     $this->company_id = intval($opts['company_id']); 
     
     // Set the user table
-    $this->user_table = $this->company_id . '_users';
+    global $db_connections;
+    $this->user_table = $db_connections[$this->company_id]['tbpref'] . 'users';
   }
   
   
@@ -95,12 +96,13 @@ class MnoSsoUser extends MnoSsoBaseUser
       $pos = 1;
       $profile = "1";
       $rep = 1;
+      $theme = 'dynamic';
       
       // Prepare query
-      $sql = "INSERT INTO {$this->user_table} (user_id, real_name, password, phone, email, role_id, language, pos, print_profile, rep_popup)
-    		VALUES (?,?,?,?,?,?,?,?,?,?)";
+      $sql = "INSERT INTO {$this->user_table} (user_id, real_name, password, phone, email, role_id, language, pos, print_profile, rep_popup, theme)
+    		VALUES (?,?,?,?,?,?,?,?,?,?,?)";
     	$stmt = $this->connection->prepare($sql);
-    	$stmt->bind_param("sssssisisi", 
+    	$stmt->bind_param("sssssisisis", 
     	  $this->uid,
     	  $full_name,
     	  $password,
@@ -110,7 +112,8 @@ class MnoSsoUser extends MnoSsoBaseUser
     	  $language,
     	  $pos,
     	  $profile,
-    	  $rep);
+    	  $rep,
+          $theme);
     	
     	// Execute statement and get id
     	$stmt->execute();

@@ -82,16 +82,16 @@ function delete_supplier($supplier_id)
 {
     global $opts;
 	
-	$sql="DELETE FROM ".TB_PREF."suppliers WHERE supplier_id=".db_escape($supplier_id);
-	db_query($sql,"check failed");
-	
-	try {
+    $sql="DELETE FROM ".TB_PREF."suppliers WHERE supplier_id=".db_escape($supplier_id);
+    db_query($sql,"check failed");
+
+    try {
         // Get Maestrano Service
         $maestrano = MaestranoService::getInstance();
 
         // DISABLED DELETE NOTIFICATIONS
         if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {
-            $mno_org=new MnoSoaOrganizationSupplier($opts['db_connection'], new MnoSoaBaseLogger());
+            $mno_org=new MnoSoaOrganizationSupplier();
             $mno_org->sendDeleteNotification($supplier_id);
         }
     } catch (Exception $ex) {

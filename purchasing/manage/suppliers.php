@@ -202,6 +202,11 @@ if (isset($_POST['submit']))
 		display_error(_("The supplier short name must be entered."));
 		set_focus('supp_ref');
 	}
+        
+        if (!isset($_POST['inactive']) || strlen($_POST['inactive'])  == 0) 
+        {
+            $_POST['inactive'] = false;
+        }
 
 	if ($input_error !=1 )
 	{

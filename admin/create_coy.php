@@ -18,7 +18,11 @@ include_once($path_to_root . "/admin/db/company_db.inc");
 include_once($path_to_root . "/admin/db/maintenance_db.inc");
 include_once($path_to_root . "/includes/ui.inc");
 
-page(_($help_context = "Create/Update Company"));
+if (sizeof($db_connections) == 2 && !(isset($_GET['c']) && $_GET['c'] == 'df')) {
+    page(_($help_context = "Update Company"));
+} else {
+    page(_($help_context = "Create Company"));
+}
 
 $comp_subdirs = array('images', 'pdf_files', 'backup','js_cache', 'reporting', 'attachments');
 
@@ -102,7 +106,7 @@ function handle_submit()
 
 	$new = !isset($db_connections[$selected_id]);
 
-	if ((bool)$_POST['def'] == true)
+	if ((bool)$_POST['def'] == true || sizeof($db_connections) == 1)
 		$def_coy = $selected_id;
 
 	$db_connections[$selected_id]['name'] = $_POST['name'];
@@ -150,6 +154,12 @@ function handle_submit()
         if ($maestrano->isSsoEnabled()) {
           db_import($path_to_root . '/maestrano/app/db/1_add_mno_uid_field.sql', $conn, $selected_id);
         }
+        if ($maestrano->isSoaEnabled()) {
+          db_import($path_to_root . '/maestrano/app/db/2_add_mno_id_map.sql', $conn, $selected_id);
+          db_import($path_to_root . '/maestrano/app/db/3_truncate_demo_data.sql', $conn, $selected_id);
+          db_import($path_to_root . '/maestrano/app/db/4_add_mno_item_fields.sql', $conn, $selected_id);
+          db_import($path_to_root . '/maestrano/app/db/5_add_mno_currencies.sql', $conn, $selected_id);
+        }
 			}	
 		}
 		set_global_connection();
@@ -187,6 +197,7 @@ function handle_delete()
 	global $def_coy, $db_connections, $comp_subdirs, $path_to_root;
 
 	$id = $_GET['id'];
+	if (empty($id)) { return; }
 
 	// First make sure all company directories from the one under removal are writable. 
 	// Without this after operation we end up with changed per-company owners!
@@ -263,16 +274,25 @@ function display_companies()
 		}
 		</script>";
 	start_table(TABLESTYLE);
-  $th= array(_("Company"), _("Table Pref"), _("Default"), "", "");
+    $th= array(_("Company"), _("Default"), "", "");
+    //$th= array(_("Company"), _("Table Pref"), _("Default"), "", "");
 	#$th = array(_("Company"), _("Database Host"), _("Database User"),
 	#	_("Database Name"), _("Table Pref"), _("Default"), "", "");
+    $conn = $db_connections;
+	$n = count($conn);
+        
+    if ($n <= 1) {
+        return;
+    }
+  
 	table_header($th);
 
 	$k=0;
-	$conn = $db_connections;
-	$n = count($conn);
 	for ($i = 0; $i < $n; $i++)
 	{
+        if ($i==0) {
+            continue;
+        }
 		if ($i == $def_coy)
 			$what = _("Yes");
 		else
@@ -286,7 +306,7 @@ function display_companies()
 		#label_cell($conn[$i]['host']);
 		#label_cell($conn[$i]['dbuser']);
 		#label_cell($conn[$i]['dbname']);
-		label_cell($conn[$i]['tbpref']);
+		//label_cell($conn[$i]['tbpref']);
 		label_cell($what);
 		$edit = _("Edit");
 		$delete = _("Delete");
@@ -303,16 +323,22 @@ function display_companies()
 	}
 
 	end_table();
-    display_note(_("The marked company is the current company which cannot be deleted."), 0, 0, "class='currentfg'");
-    display_note(_("If no Admin Password is entered, the new Admin Password will be '<b>password</b>' by default "), 1, 0, "class='currentfg'");
+        echo "<br/>";
+    //display_note(_("The marked company is the current company which cannot be deleted."), 0, 0, "class='currentfg'");
+    //display_note(_("If no Admin Password is entered, the new Admin Password will be '<b>password</b>' by default "), 1, 0, "class='currentfg'");
 }
 
 //---------------------------------------------------------------------------------------------
 
 function display_company_edit($selected_id)
 {
-	global $def_coy, $db_connections, $tb_pref_counter;
+	global $def_coy, $db_connections, $tb_pref_counter, $path_to_root;
 
+        
+    if ($selected_id == -1 && sizeof($db_connections) > 1) {
+        return;
+    }
+        
 	start_form();
 
 	start_table(TABLESTYLE2);
@@ -332,7 +358,7 @@ function display_company_edit($selected_id)
 			$_POST['def'] = false;
 		$_POST['dbcreate']  = false;
 		hidden('selected_id', $selected_id);
-		hidden('tbpref', $_POST['tbpref']);
+	//	hidden('tbpref', $_POST['tbpref']);
 		#hidden('dbpassword', $_POST['dbpassword']);
 	}
 	else
@@ -355,18 +381,19 @@ function display_company_edit($selected_id)
 		#text_row_ex(_("Database User"), 'dbuser', 30);
 		#text_row_ex(_("Database Password"), 'dbpassword', 30);
 		#text_row_ex(_("Database Name"), 'dbname', 30);
-    hidden('tbpref', $_POST['tbpref']);
+        hidden('tbpref', $_POST['tbpref']);
 	} else {
 		#label_row(_("Host"), $_POST['host']);
 		#label_row(_("Database User"), $_POST['dbuser']);
 		#label_row(_("Database Name"), $_POST['dbname']);
 		#label_row(_("Table Pref"), $_POST['tbpref']);
 	}
-	yesno_list_row(_("Default"), 'def', null, "", "", false);
+
+		// yesno_list_row(_("Default"), 'def', null, "", "", false);
 
 	if ($selected_id == -1)
 	{
-		coa_list_row(_("Database Script"), 'coa');
+		coa_list_row(_("Chart of Accounts"), 'coa');
 		#text_row_ex(_("New script Admin Password"), 'admpassword', 20);
 	}
 	end_table(1);
@@ -390,14 +417,19 @@ if (get_post('save')) {
 }
 
 //---------------------------------------------------------------------------------------------
+if (sizeof($db_connections) != 1) {
+    display_companies();
 
-display_companies();
-
-hyperlink_no_params($_SERVER['PHP_SELF'], _("Create a new company"));
+//    hyperlink_no_params($_SERVER['PHP_SELF'], _("Create a new company"));
+}
 
 display_company_edit($selected_id);
 
 //---------------------------------------------------------------------------------------------
 end_page();
+
+if (get_post('save')) {
+    header('Location: '. $path_to_root . '/access/logout.php');
+}
 
 ?>

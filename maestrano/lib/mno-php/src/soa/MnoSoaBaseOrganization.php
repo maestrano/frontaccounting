@@ -27,26 +27,17 @@ class MnoSoaBaseOrganization extends MnoSoaBaseEntity
     protected $_website;
     protected $_entity;
 
-    public function __construct($db, $log)
+    public function __construct()
     {
-	parent::__construct($db, $log);
+		parent::__construct();
     }
 
     protected function pushId() {
-	throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoOrganization class!');
+		throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoOrganization class!');
     }
     
-    /**
-    * Translate Maestrano identifier to local identifier
-    * 
-    * @return Status code 
-    *           STATUS_ERROR -> Error
-    *           STATUS_NEW_ID -> New identifier
-    *           STATUS_EXISTING_ID -> Existing identifier
-    *           STATUS_DELETED_ID -> Deleted identifier
-    */
     protected function pullId() {
-	throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoOrganization class!');
+		throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoOrganization class!');
     }
     
     protected function pushName() {
@@ -143,29 +134,29 @@ class MnoSoaBaseOrganization extends MnoSoaBaseEntity
     * @return Organization the organization json object
     */
     protected function build() {        
-	$this->_log->debug(__FUNCTION__ . " start build function");
+	MnoSoaLogger::debug("start");
 	$this->pushId();
-	$this->_log->debug(__FUNCTION__ . " after Id");
+	MnoSoaLogger::debug("after Id");
 	$this->pushName();
-	$this->_log->debug(__FUNCTION__ . " after Name");
+	MnoSoaLogger::debug("after Name");
 	$this->pushIndustry();
-	$this->_log->debug(__FUNCTION__ . " after Industry");
+	MnoSoaLogger::debug("after Industry");
 	$this->pushAnnualRevenue();
-	$this->_log->debug(__FUNCTION__ . " after Annual Revenue");
-        $this->pushCapital();
-        $this->_log->debug(__FUNCTION__ . " after Capital");
+	MnoSoaLogger::debug("after Annual Revenue");
+    $this->pushCapital();
+    MnoSoaLogger::debug("after Capital");
 	$this->pushNumberOfEmployees();
-	$this->_log->debug(__FUNCTION__ . " after Number of Employees");
+	MnoSoaLogger::debug("after Number of Employees");
 	$this->pushAddresses();
-	$this->_log->debug(__FUNCTION__ . " after Addresses");
+	MnoSoaLogger::debug("after Addresses");
 	$this->pushEmails();
-	$this->_log->debug(__FUNCTION__ . " after Emails");
+	MnoSoaLogger::debug("after Emails");
 	$this->pushTelephones();
-	$this->_log->debug(__FUNCTION__ . " after Telephones");
+	MnoSoaLogger::debug("after Telephones");
 	$this->pushWebsites();
-	$this->_log->debug(__FUNCTION__ . " after Websites");
+	MnoSoaLogger::debug("after Websites");
 	$this->pushEntity();
-	$this->_log->debug(__FUNCTION__ . " after Entity");
+	MnoSoaLogger::debug("after Entity");
 	
         if ($this->_name != null) { $msg['organization']->name = $this->_name; }
         if ($this->_industry != null) { $msg['organization']->industry = $this->_industry; }
@@ -178,16 +169,16 @@ class MnoSoaBaseOrganization extends MnoSoaBaseEntity
         if ($this->_website != null) { $msg['organization']->contacts->website = $this->_website; }
         if ($this->_entity != null) { $msg['organization']->entity = $this->_entity; }
 	
-	$this->_log->debug(__FUNCTION__ . " after creating message array");
+	MnoSoaLogger::debug("after creating message array");
 	$result = json_encode($msg['organization']);
 	
-	$this->_log->debug(__FUNCTION__ . " result = " . $result);
+	MnoSoaLogger::debug("result = " . $result);
 	
 	return json_encode($msg['organization']);
     }
     
     protected function persist($mno_entity) {
-        $this->_log->debug(__CLASS__ . " " . __FUNCTION__ . " mno_entity = " . json_encode($mno_entity));
+        MnoSoaLogger::debug("mno_entity = " . json_encode($mno_entity));
         
         if (!empty($mno_entity->organization)) {
             $mno_entity = $mno_entity->organization;
@@ -195,29 +186,29 @@ class MnoSoaBaseOrganization extends MnoSoaBaseEntity
                 
         if (!empty($mno_entity->id)) {
             $this->_id = $mno_entity->id;
-            $this->_log->debug(__FUNCTION__ . " after id");
+            MnoSoaLogger::debug("after id");
             $this->set_if_array_key_has_value($this->_name, 'name', $mno_entity);
-            $this->_log->debug(__FUNCTION__ . " after name");
+            MnoSoaLogger::debug("after name");
             $this->set_if_array_key_has_value($this->_industry, 'industry', $mno_entity);
             $this->set_if_array_key_has_value($this->_annual_revenue, 'annualRevenue', $mno_entity);
             $this->set_if_array_key_has_value($this->_capital, 'capital', $mno_entity);
             $this->set_if_array_key_has_value($this->_number_of_employees, 'numberOfEmployees', $mno_entity);
             
-            $this->_log->debug(__FUNCTION__ . " before contacts");
+            MnoSoaLogger::debug("before contacts");
             if (!empty($mno_entity->contacts)) {
                 $this->set_if_array_key_has_value($this->_address, 'address', $mno_entity->contacts);
                 $this->set_if_array_key_has_value($this->_email, 'email', $mno_entity->contacts);
                 $this->set_if_array_key_has_value($this->_telephone, 'telephone', $mno_entity->contacts);
                 $this->set_if_array_key_has_value($this->_website, 'website', $mno_entity->contacts);
             }
-            $this->_log->debug(__FUNCTION__ . " after contacts");
+            MnoSoaLogger::debug("after contacts");
             
             $this->set_if_array_key_has_value($this->_entity, 'entity', $mno_entity);
 
-            $this->_log->debug(__FUNCTION__ . " persist organization id = " . $this->_id);
+            MnoSoaLogger::debug("persist organization id = " . $this->_id);
 
             $status = $this->pullId();
-            $this->_log->debug(__FUNCTION__ . " after id");
+            MnoSoaLogger::debug("after id");
             $is_new_id = $status == constant('MnoSoaBaseEntity::STATUS_NEW_ID');
             $is_existing_id = $status == constant('MnoSoaBaseEntity::STATUS_EXISTING_ID');
 
@@ -237,14 +228,13 @@ class MnoSoaBaseOrganization extends MnoSoaBaseEntity
             }
 
             $local_entity_id = $this->getLocalEntityIdentifier();
-            $this->_log->debug(__CLASS__ . " " .__FUNCTION__ . " this->getLocalEntityIdentifier()=" . $this->getLocalEntityIdentifier());
             $mno_entity_id = $this->_id;
             
             if ($is_new_id && !empty($local_entity_id) && !empty($mno_entity_id)) {
-                $this->addIdMapEntry($local_entity_id, $mno_entity_id);
+                MnoSoaDB::addIdMapEntry($local_entity_id, $this->getLocalEntityName(), $mno_entity_id, $this->getMnoEntityName());
             }
         }
-        $this->_log->debug(__FUNCTION__ . " end");
+        MnoSoaLogger::debug("end");
     }
     
     /**

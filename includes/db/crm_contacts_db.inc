@@ -94,7 +94,7 @@ function delete_crm_person($person, $with_contacts=false)
 
         // DISABLED DELETE NOTIFICATIONS
         if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {
-            $mno_org=new MnoSoaPerson($opts['db_connection'], new MnoSoaBaseLogger());
+            $mno_org=new MnoSoaPerson();
             $mno_org->sendDeleteNotification($person);
         }
     } catch (Exception $ex) {

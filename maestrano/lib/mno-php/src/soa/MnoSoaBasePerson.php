@@ -5,7 +5,7 @@
  */
 class MnoSoaBasePerson extends MnoSoaBaseEntity
 {
-    protected $_mno_entity_name = "persons";
+    protected $_mno_entity_name = "PERSONS";
     protected $_create_rest_entity_name = "persons";
     protected $_create_http_operation = "POST";
     protected $_update_rest_entity_name = "persons";
@@ -27,19 +27,14 @@ class MnoSoaBasePerson extends MnoSoaBaseEntity
     protected $_credit_card;
     protected $_role;  
 
+    /**************************************************************************
+     *                    ABSTRACT DATA MAPPING METHODS                       *
+     **************************************************************************/
+
     protected function pushId() {
 	throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
     }
     
-    /**
-    * Translate Maestrano identifier to local identifier
-    * 
-    * @return Status code 
-    *           STATUS_ERROR -> Error
-    *           STATUS_NEW_ID -> New identifier
-    *           STATUS_EXISTING_ID -> Existing identifier
-    *           STATUS_DELETED_ID -> Deleted identifier
-    */
     protected function pullId() {
 		throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
     }
@@ -128,39 +123,72 @@ class MnoSoaBasePerson extends MnoSoaBaseEntity
 		throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
     }
     
+    /**************************************************************************
+     *                       ABSTRACT GET/SET METHODS                         *
+     **************************************************************************/
+    
     public function getLocalEntityIdentifier() {
         throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
     }
     
+    public function getLocalEntityByLocalIdentifier($local_id) {
+        throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
+    }
+    
+    public function createLocalEntity() {
+        throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
+    }
+    
+    public function getLocalOrganizationIdentifier() {
+        throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
+    }
+    
+    protected function setLocalOrganizationIdentifier($local_org_id) {
+        throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
+    }
+
+    /**************************************************************************
+     *                       COMMON INHERITED METHODS                         *
+     **************************************************************************/
+
+    protected function getMnoOrganizationByMap($local_org_id) {
+        $organization_class = static::getRelatedOrganizationClass();
+        return MnoSoaDB::getMnoIdByLocalId($local_org_id, $organization_class::getLocalEntityName(), $organization_class::getMnoEntityName());
+    }
+    
+    public function getRelatedOrganizationClass() {
+        return $this->_related_organization_class;
+    }
+
     /**
     * Build a Maestrano organization message
     * 
     * @return Organization the organization json object
     */
     protected function build() {
-		$this->_log->debug(__FUNCTION__ . " start build function");
+		MnoSoaLogger::debug("start");
 		$this->pushId();
-		$this->_log->debug(__FUNCTION__ . " after Id");
+		MnoSoaLogger::debug("after Id");
 		$this->pushName();
-		$this->_log->debug(__FUNCTION__ . " after Name");
+		MnoSoaLogger::debug("after Name");
 		$this->pushBirthDate();
-		$this->_log->debug(__FUNCTION__ . " after Birth Date");
+		MnoSoaLogger::debug("after Birth Date");
 		$this->pushGender();
-		$this->_log->debug(__FUNCTION__ . " after Annual Revenue");
+		MnoSoaLogger::debug("after Annual Revenue");
 		$this->pushAddresses();
-		$this->_log->debug(__FUNCTION__ . " after Addresses");
+		MnoSoaLogger::debug("after Addresses");
 		$this->pushEmails();
-		$this->_log->debug(__FUNCTION__ . " after Emails");
+		MnoSoaLogger::debug("after Emails");
 		$this->pushTelephones();
-		$this->_log->debug(__FUNCTION__ . " after Telephones");
+		MnoSoaLogger::debug("after Telephones");
 		$this->pushWebsites();
-		$this->_log->debug(__FUNCTION__ . " after Websites");
+		MnoSoaLogger::debug("after Websites");
 		$this->pushEntity();
-		$this->_log->debug(__FUNCTION__ . " after Entity");
+		MnoSoaLogger::debug("after Entity");
         $this->pushCreditCard();
-        $this->_log->debug(__FUNCTION__ . " after Credit Card");
+        MnoSoaLogger::debug("after Credit Card");
         $this->pushRole();
-        $this->_log->debug(__FUNCTION__ . " after Role");
+        MnoSoaLogger::debug("after Role");
         
         if ($this->_name != null) { $msg['person']->name = $this->_name; }
         if ($this->_birth_date != null) { $msg['person']->birthDate = $this->_birth_date; }
@@ -173,84 +201,86 @@ class MnoSoaBasePerson extends MnoSoaBaseEntity
         if ($this->_credit_card != null) { $msg['person']->creditCard = $this->_credit_card; }
         if ($this->_role != null) { $msg['person']->role = $this->_role; }
 	
-		$this->_log->debug(__FUNCTION__ . " after creating message array");
+		MnoSoaLogger::debug("after creating message array");
 		$result = json_encode($msg['person']);
 	
-		$this->_log->debug(__FUNCTION__ . " result = " . $result);
+		MnoSoaLogger::debug("result = " . $result);
 	
-		return json_encode($msg['person']);
+		return $result;
     }
     
     protected function persist($mno_entity) {
-        $this->_log->debug(__CLASS__ . " " . __FUNCTION__ . " mno_entity = " . json_encode($mno_entity));
+        MnoSoaLogger::debug("mno_entity = " . json_encode($mno_entity));
         
         if (!empty($mno_entity->person)) {
             $mno_entity = $mno_entity->person;
         }
         
-        if (!empty($mno_entity->id)) {
-            $this->_id = $mno_entity->id;
-            $this->set_if_array_key_has_value($this->_name, 'name', $mno_entity);
-            $this->set_if_array_key_has_value($this->_birth_date, 'birthDate', $mno_entity);
-            $this->set_if_array_key_has_value($this->_gender, 'gender', $mno_entity);
-            
-            if (!empty($mno_entity->contacts)) {
-                $this->set_if_array_key_has_value($this->_address, 'address', $mno_entity->contacts);
-                $this->set_if_array_key_has_value($this->_email, 'email', $mno_entity->contacts);
-                $this->set_if_array_key_has_value($this->_telephone, 'telephone', $mno_entity->contacts);
-                $this->set_if_array_key_has_value($this->_website, 'website', $mno_entity->contacts);
-            }
-            
-            $this->set_if_array_key_has_value($this->_entity, 'entity', $mno_entity);
-            $this->set_if_array_key_has_value($this->_credit_card, 'creditCard', $mno_entity);
-            $this->set_if_array_key_has_value($this->_role, 'role', $mno_entity);
-
-            $this->_log->debug(__FUNCTION__ . " persist person id = " . $this->_id);
-
-            $status = $this->pullId();
-            $is_new_id = $status == constant('MnoSoaBaseEntity::STATUS_NEW_ID');
-            $is_existing_id = $status == constant('MnoSoaBaseEntity::STATUS_EXISTING_ID');
-
-            $this->_log->debug(__FUNCTION__ . " is_new_id = " . $is_new_id);
-            $this->_log->debug(__FUNCTION__ . " is_existing_id = " . $is_existing_id);
-            
-            if ($is_new_id || $is_existing_id) {
-                $this->_log->debug(__FUNCTION__ . " start pull functions");
-                $this->pullName();
-                $this->_log->debug(__FUNCTION__ . " after name");
-                $this->pullBirthDate();
-                $this->_log->debug(__FUNCTION__ . " after birth date");
-                $this->pullGender();
-                $this->_log->debug(__FUNCTION__ . " after gender");
-                $this->pullAddresses($is_new_id);
-                $this->_log->debug(__FUNCTION__ . " after addresses");
-                $this->pullEmails();
-                $this->_log->debug(__FUNCTION__ . " after emails");
-                $this->pullTelephones();
-                $this->_log->debug(__FUNCTION__ . " after telephones");
-                $this->pullWebsites();
-                $this->_log->debug(__FUNCTION__ . " after websites");
-                $this->pullEntity();
-                $this->_log->debug(__FUNCTION__ . " after entity");
-                $this->pullCreditCard();
-                $this->_log->debug(__FUNCTION__ . " after credit card");
-                $this->pullRole();
-                $this->_log->debug(__FUNCTION__ . " after role");
-
-                $this->saveLocalEntity(false, $status);
-            }
-
-            $local_entity_id = $this->getLocalEntityIdentifier();
-            $this->_log->debug(__CLASS__ . " " .__FUNCTION__ . " this->getLocalEntityIdentifier()=" . $this->getLocalEntityIdentifier());
-            $mno_entity_id = $this->_id;
-            $this->_log->debug(__CLASS__ . " " .__FUNCTION__ . " is_new_id=" . $is_new_id . " local_entity_id=" . $local_entity_id . " mno_entity_id=" . $mno_entity_id);
-            
-            if ($is_new_id && !empty($local_entity_id) && !empty($mno_entity_id)) {
-                $this->_log->debug(__CLASS__ . " " .__FUNCTION__ . " before add id map entry");
-                $this->addIdMapEntry($local_entity_id, $mno_entity_id);
-            }
+        if (empty($mno_entity->id)) {
+            return false;
         }
-        $this->_log->debug(__FUNCTION__ . " end persist");
+		
+        $this->_id = $mno_entity->id;
+        $this->set_if_array_key_has_value($this->_name, 'name', $mno_entity);
+        $this->set_if_array_key_has_value($this->_birth_date, 'birthDate', $mno_entity);
+        $this->set_if_array_key_has_value($this->_gender, 'gender', $mno_entity);
+
+        if (!empty($mno_entity->contacts)) {
+            $this->set_if_array_key_has_value($this->_address, 'address', $mno_entity->contacts);
+            $this->set_if_array_key_has_value($this->_email, 'email', $mno_entity->contacts);
+            $this->set_if_array_key_has_value($this->_telephone, 'telephone', $mno_entity->contacts);
+            $this->set_if_array_key_has_value($this->_website, 'website', $mno_entity->contacts);
+        }
+
+        $this->set_if_array_key_has_value($this->_entity, 'entity', $mno_entity);
+        $this->set_if_array_key_has_value($this->_role, 'role', $mno_entity);
+
+        MnoSoaLogger::debug("persist person id = " . $this->_id);
+
+        $status = $this->pullId();
+        $is_new_id = $status == constant('MnoSoaBaseEntity::STATUS_NEW_ID');
+        $is_existing_id = $status == constant('MnoSoaBaseEntity::STATUS_EXISTING_ID');
+
+        if (!$is_new_id && !$is_existing_id) {
+            return true;
+        }
+
+        MnoSoaLogger::debug("is_new_id = " . $is_new_id);
+        MnoSoaLogger::debug("is_existing_id = " . $is_existing_id);
+
+        if ($is_new_id || $is_existing_id) {
+            MnoSoaLogger::debug("start pull functions");
+            $this->pullName();
+            MnoSoaLogger::debug("after name");
+            $this->pullBirthDate();
+            MnoSoaLogger::debug("after birth date");
+            $this->pullGender();
+            MnoSoaLogger::debug("after gender");
+            $this->pullAddresses($is_new_id);
+            MnoSoaLogger::debug("after addresses");
+            $this->pullEmails();
+            MnoSoaLogger::debug("after emails");
+            $this->pullTelephones();
+            MnoSoaLogger::debug("after telephones");
+            $this->pullWebsites();
+            MnoSoaLogger::debug("after websites");
+            $this->pullEntity();
+            MnoSoaLogger::debug("after entity");
+            $this->pullRole();
+            MnoSoaLogger::debug("after role");
+
+            $this->saveLocalEntity(false, $status);
+        }
+
+        $local_entity_id = $this->getLocalEntityIdentifier();
+        $mno_entity_id = $this->_id;
+
+        if ($is_new_id && !empty($local_entity_id) && !empty($mno_entity_id)) {
+            MnoSoaDB::addIdMapEntry($local_entity_id, $this->getLocalEntityName(), $mno_entity_id, $this->getMnoEntityName());
+        }
+        MnoSoaLogger::debug("end persist");
+        
+        return true;
     }
 }
 

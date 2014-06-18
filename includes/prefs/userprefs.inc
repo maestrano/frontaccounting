@@ -48,7 +48,7 @@ class user_prefs
 			$this->dec_sep = 0;
 			$this->price_dec = 2;
 			$this->language = $dflt_lang;
-			$this->theme = 'default';
+			$this->theme = 'dynamic';
 			
 		} else {
 			global $path_to_root;
@@ -84,7 +84,7 @@ class user_prefs
 				$this->startup_tab = "orders";
 			}
 			if (!file_exists("$path_to_root/themes/$this->theme"))
-				$this->theme = "default";
+				$this->theme = "dynamic";
 		}
 	}
 	

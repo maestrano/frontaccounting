@@ -21,7 +21,7 @@ if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {
         
         if (empty($timestamp)) { $timestamp = 0; } 
 
-        $mno_entity = new MnoSoaEntity($opts['db_connection'], new MnoSoaBaseLogger());
+        $mno_entity = new MnoSoaEntity();
         $status = $mno_entity->getUpdates($timestamp);
     }
     

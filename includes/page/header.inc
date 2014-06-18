@@ -142,7 +142,9 @@ function page_header($title, $no_menu=false, $is_index=false, $onload="", $js=""
 
 	include_once($path_to_root . "/themes/$theme/renderer.php");
 	$rend = new renderer();
-	$rend->menu_header($title, $no_menu, $is_index);
+        //if (sizeof($db_connections) != 1) {
+            $rend->menu_header($title, $no_menu, $is_index);
+        //}
 	error_box();
 }
 

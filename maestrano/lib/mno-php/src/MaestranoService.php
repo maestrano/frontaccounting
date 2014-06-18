@@ -71,7 +71,8 @@ class MaestranoService
     */
     public function getSsoSession()
     {
-      return new MnoSsoSession(self::$_settings, $this->getPhpSession());
+      $phpSession = $this->getPhpSession();
+      return new MnoSsoSession(self::$_settings, $phpSession);
     }
     
     /**

@@ -215,7 +215,9 @@ function frindly_db_error($db_error)
 	
 	if ($db_error == $db_duplicate_error_code) 
 	{	
-		display_error(_("The entered information is a duplicate. Please go back and enter different values."));
+                if (function_exists("display_error")) {
+                    display_error(_("The entered information is a duplicate. Please go back and enter different values."));
+                }
 		return true;
 	}
 	
@@ -239,7 +241,7 @@ function check_db_error($msg, $sql_statement, $exit_if_error=true, $rollback_if_
 		  $rollback_result = db_query("rollback");
 		}
 		
-		if ($exit_if_error) 
+		if ($exit_if_error && function_exists("end_page")) 
 		{
 			end_page(); exit;
 		}

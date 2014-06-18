@@ -17,7 +17,7 @@ if ($use_popup_windows)
 	$js .= get_js_open_window(900, 500);
 if ($use_date_picker)
 	$js .= get_js_date_picker();
-	
+
 page(_($help_context = "Items"), @$_REQUEST['popup'], false, "", $js);
 
 include_once($path_to_root . "/includes/date_functions.inc");
@@ -109,6 +109,7 @@ check_db_has_item_tax_types(_("There are no item tax types defined in the system
 
 function clear_data()
 {
+    unset($_POST['ref']);
 	unset($_POST['long_description']);
 	unset($_POST['description']);
 	unset($_POST['category_id']);
@@ -125,11 +126,16 @@ function clear_data()
 
 if (isset($_POST['addupdate'])) 
 {
-
 	$input_error = 0;
 	if ($upload_file == 'No')
 		$input_error = 1;
-	if (strlen($_POST['description']) == 0) 
+        if (strlen($_POST['ref']) == 0)
+        {
+                $input_error = 1;
+		display_error( _('The item code must be entered.'));
+		set_focus('ref');
+        }
+        elseif (strlen($_POST['description']) == 0) 
 	{
 		$input_error = 1;
 		display_error( _('The item name must be entered.'));
@@ -166,6 +172,8 @@ if (isset($_POST['addupdate']))
 				unlink($filename);
 		}
 		
+        $new_stock_id = $_POST['NewStockID'];
+
 		if (!$new_item) 
 		{ /*so its an existing one */
 			update_item($_POST['NewStockID'], $_POST['description'],
@@ -175,7 +183,7 @@ if (isset($_POST['addupdate']))
 				$_POST['inventory_account'], $_POST['cogs_account'],
 				$_POST['adjustment_account'], $_POST['assembly_account'], 
 				$_POST['dimension_id'], $_POST['dimension2_id'],
-				check_value('no_sale'), check_value('editable'));
+				check_value('no_sale'), check_value('editable'), $_POST['ref']);
 			update_record_status($_POST['NewStockID'], $_POST['inactive'],
 				'stock_master', 'stock_id');
 			update_record_status($_POST['NewStockID'], $_POST['inactive'],
@@ -193,15 +201,24 @@ if (isset($_POST['addupdate']))
 				$_POST['inventory_account'], $_POST['cogs_account'],
 				$_POST['adjustment_account'], $_POST['assembly_account'], 
 				$_POST['dimension_id'], $_POST['dimension2_id'],
-				check_value('no_sale'), check_value('editable'));
-
+				check_value('no_sale'), check_value('editable'), $_POST['ref']);
+                
+                // DO ADD_ITEM AND UPDATE CHANGES TO INCLUDE REF IN FN DEFINTION
+                
 			display_notification(_("A new item has been added."));
 			$_POST['stock_id'] = $_POST['NewStockID'] = 
 			$_POST['description'] = $_POST['long_description'] = '';
 			$_POST['no_sale'] = $_POST['editable'] = 0;
 			set_focus('NewStockID');
 		}
+                
 		$Ajax->activate('_page_body');
+                
+        if (!empty($new_stock_id)) {
+            mno_hook_push_item($new_stock_id);
+        }
+        
+        $new_stock_id = "";
 	}
 }
 
@@ -230,14 +247,12 @@ function check_usage($stock_id, $dispmsg=true)
 
 if (isset($_POST['delete']) && strlen($_POST['delete']) > 1) 
 {
-
-	if (check_usage($_POST['NewStockID'])) {
-
+	if (check_usage($_POST['NewStockID'])) 
+        {
 		$stock_id = $_POST['NewStockID'];
 		delete_item($stock_id);
 		$filename = company_path().'/images/'.item_img_name($stock_id).".jpg";
-		if (file_exists($filename))
-			unlink($filename);
+		if (file_exists($filename)) unlink($filename);
 		display_notification(_("Selected item has been deleted."));
 		$_POST['stock_id'] = '';
 		clear_data();
@@ -260,8 +275,13 @@ function item_settings(&$stock_id)
 	//------------------------------------------------------------------------------------
 	if ($new_item) 
 	{
-		text_row(_("Item Code:"), 'NewStockID', null, 21, 20);
-
+		//text_row(_("Item Code:"), 'NewStockID', null, 21, 20);
+        $timestamp = (string) time();
+        $timestamp .= (string) rand(100,999);
+        $timestamp = strtoupper(base_convert($timestamp, 10, 36));
+        $_POST['NewStockID'] = "$timestamp";
+        label_row(_("Item ID:"),$_POST['NewStockID']);
+        hidden('NewStockID', $_POST['NewStockID']);
 		$_POST['inactive'] = 0;
 	} 
 	else 
@@ -272,6 +292,7 @@ function item_settings(&$stock_id)
 
 			$myrow = get_item($_POST['NewStockID']);
 
+            $_POST['ref'] = $myrow["ref"];
 			$_POST['long_description'] = $myrow["long_description"];
 			$_POST['description'] = $myrow["description"];
 			$_POST['category_id']  = $myrow["category_id"];
@@ -291,11 +312,13 @@ function item_settings(&$stock_id)
 			$_POST['inactive'] = $myrow["inactive"];
 			$_POST['editable'] = $myrow["editable"];
 		}
-		label_row(_("Item Code:"),$_POST['NewStockID']);
+		label_row(_("Item ID:"),$_POST['NewStockID']);
 		hidden('NewStockID', $_POST['NewStockID']);
 		set_focus('description');
 	}
 
+    text_row(_("Code:"), 'ref', null, 52, 200);
+    
 	text_row(_("Name:"), 'description', null, 52, 200);
 
 	textarea_row(_('Description:'), 'long_description', null, 42, 3);
@@ -412,7 +435,9 @@ function item_settings(&$stock_id)
 		submit_return('select', get_post('stock_id'), 
 			_("Select this items and return to document entry."), 'default');
 		submit('clone', _("Clone This Item"), true, '', true);
+                /*
 		submit('delete', _("Delete This Item"), true, '', true);
+                 */
 		submit_center_last('cancel', _("Cancel"), _("Cancel Edition"), 'cancel');
 	}
 
