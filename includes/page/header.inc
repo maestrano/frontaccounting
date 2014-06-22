@@ -118,7 +118,8 @@ function page_header($title, $no_menu=false, $is_index=false, $onload="", $js=""
 	if(isset($db_connections))	// skip before installation
 		hook_invoke_all('pre_header', $page_header_args);
 
-	$encoding = $_SESSION['language']->encoding;
+	//$encoding = $_SESSION['language']->encoding;
+        $encoding = "UTF-8";
 
 	if (!headers_sent()){
 		header("Content-type: text/html; charset='$encoding'");

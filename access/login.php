@@ -47,7 +47,8 @@ function defaultCompany()
 	$login_timeout = $_SESSION["wa_current_user"]->last_act;
 
 	$title = $login_timeout ? _('Authorization timeout') : $app_title." ".$version." - "._("Login");
-	$encoding = isset($_SESSION['language']->encoding) ? $_SESSION['language']->encoding : "iso-8859-1";
+	//$encoding = isset($_SESSION['language']->encoding) ? $_SESSION['language']->encoding : "iso-8859-1";
+        $encoding = "UTF-8";
 	$rtl = isset($_SESSION['language']->dir) ? $_SESSION['language']->dir : "ltr";
 	$onload = !$login_timeout ? "onload='defaultCompany()'" : "";
 

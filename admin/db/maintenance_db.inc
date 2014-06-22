@@ -268,6 +268,7 @@ function db_import($filename, $connection, $force=true)
 		"drop table if exists" => 'drop_queries',
 		"drop function if exists" => 'drop_queries',
 		"drop trigger if exists" => 'drop_queries',
+                "truncate" => 'drop_queries'
 		);
 	$ignored_mysql_errors = array( //errors ignored in normal (non forced) mode
 		'1022',	// duplicate key

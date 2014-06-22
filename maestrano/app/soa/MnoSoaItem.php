@@ -8,6 +8,7 @@ class MnoSoaItem extends MnoSoaBaseItem
     protected $_local_entity_name = "STOCK_MASTER";
     public $_local_item_id = null;
     public $_tb_pref = null;
+    public $_is_new = false;
     
     protected function pushItem()
     {
@@ -17,6 +18,7 @@ class MnoSoaItem extends MnoSoaBaseItem
         
         $mno_id = MnoSoaDB::getMnoIdByLocalId($id, $this->getLocalEntityName(), $this->getMnoEntityName());
         $this->_id = (MnoSoaDB::isValidIdentifier($mno_id)) ? $mno_id->_id : null;
+        $this->_is_new = (MnoSoaDB::isNewIdentifier($mno_id)) ? true : false;
         
         $item = $this->_local_entity;
 
@@ -35,13 +37,21 @@ class MnoSoaItem extends MnoSoaBaseItem
         // PUSH UNIT
         $this->_unit = strtoupper($this->push_set_or_delete_value($item->unit));
         // PUSH SALE->PRICE
-        $this->_sale->price = $this->push_set_or_delete_value($item->salePrice);
+        if (!empty($item->salePrice) && $item->salePrice !== 0) {
+            $this->_sale->price = $this->push_set_or_delete_value($item->salePrice);
+        }
         // PUSH SALE->CURRENCY
-        $this->_sale->currency = $this->push_set_or_delete_value($item->saleCurrency);
+        if (!empty($item->saleCurrency)) {
+            $this->_sale->currency = $this->push_set_or_delete_value($item->saleCurrency);
+        }
         // PUSH PURCHASE->PRICE
-        $this->_purchase->price = $this->push_set_or_delete_value($item->purchasePrice);
+        if (!empty($item->purchasePrice) && $item->purchasePrice !== 0) {
+            $this->_purchase->price = $this->push_set_or_delete_value($item->purchasePrice);
+        }
         // PUSH PURCHASE->CURRENCY
-        $this->_purchase->currency = $this->push_set_or_delete_value($item->purchaseCurrency);
+        if (!empty($item->purchaseCurrency)) {
+            $this->_purchase->currency = $this->push_set_or_delete_value($item->purchaseCurrency);
+        }
         // PUSH STATUS
         $this->_status = $this->mapStatusToMnoFormat($item->status);
     }
@@ -52,15 +62,17 @@ class MnoSoaItem extends MnoSoaBaseItem
         $update_item_codes_mno_id_query = "UPDATE ".TB_PREF."item_codes SET mno_id='$mno_response_id' WHERE stock_id='$local_id'";
         $this->dbQuery($update_item_codes_mno_id_query);
         
-        if (!empty($this->_local_entity->supplier_id)) {
-            $update_purch_data_query = "UPDATE ".TB_PREF."purch_data SET mno_id='$mno_response_id' WHERE supplier_id='{$this->_local_entity->supplier_id}' and stock_id='{$local_id}'";
-            MnoSoaLogger::debug("Update purchase data=".$update_purch_data_query);
-            $this->dbQuery($update_purch_data_query);
-        }
-        
-        if (!empty($this->_local_entity->sale_price_id)) {
-            $update_purch_data_query = "UPDATE ".TB_PREF."prices SET mno_id='$mno_response_id' WHERE id='{$this->_local_entity->sale_price_id}'";
-            $this->dbQuery($update_purch_data_query);
+        if ($this->_is_new) {
+            if (!empty($this->_local_entity->supplier_id)) {
+                $update_purch_data_query = "UPDATE ".TB_PREF."purch_data SET mno_id='$mno_response_id' WHERE id='{$this->_local_entity->purchase_price_id}'";
+                MnoSoaLogger::debug("Update purchase data=".$update_purch_data_query);
+                $this->dbQuery($update_purch_data_query);
+            }
+
+            if (!empty($this->_local_entity->sale_price_id)) {
+                $update_purch_data_query = "UPDATE ".TB_PREF."prices SET mno_id='$mno_response_id' WHERE id='{$this->_local_entity->sale_price_id}'";
+                $this->dbQuery($update_purch_data_query);
+            }
         }
         
         return true;
@@ -75,6 +87,7 @@ class MnoSoaItem extends MnoSoaBaseItem
         
         // PULL CODE
         $code = $this->pull_set_or_delete_value($this->_code);
+        if (empty($code)) { return constant('MnoSoaBaseEntity::STATUS_ERROR'); }
         // PULL NAME
         $name = $this->pull_set_or_delete_value($this->_name);
         // PULL DESCRIPTION
@@ -87,9 +100,8 @@ class MnoSoaItem extends MnoSoaBaseItem
         if (!empty($unit)) {
             $unit_query = "SELECT * FROM ".TB_PREF."item_units WHERE UPPER(name)='$unit'";
             $unit_query_result = $this->dbQuery($unit_query);
-            $unit_query_record = db_fetch_assoc($unit_query_result);
 
-            if (!$unit_query_record) {
+            if (!$unit_query_result || !($unit_query_record = db_fetch_assoc($unit_query_result))) {
                 $unit_query = "INSERT INTO ".TB_PREF."item_units (abbr, name, decimals, inactive) VALUES ('$unit','$unit', '0', '0')";
                 $this->dbQuery($unit_query);
             } else {
@@ -98,19 +110,18 @@ class MnoSoaItem extends MnoSoaBaseItem
         }
         
         // PULL SALE PRICE/CURRENCY
-        $salePrice = floor(floatval($this->pull_set_or_delete_value($this->_sale->price, 0)) * 100);
+        $salePrice = floor(floatval($this->pull_set_or_delete_value($this->_sale->price, 0)));
         $saleCurrency = $this->pull_set_or_delete_value($this->_sale->currency);
+        $saleCurrency = (empty($saleCurrency)) ? "USD" : $saleCurrency;
         // PULL PURCHASE PRICE/CURRENCY
-        $purchasePrice = floor(floatval($this->pull_set_or_delete_value($this->_purchase->price, 0)) * 100);
+        $purchasePrice = floor(floatval($this->pull_set_or_delete_value($this->_purchase->price, 0)));
         $purchaseCurrency = $this->pull_set_or_delete_value($this->_purchase->currency);
+        $purchaseCurrency = (empty($purchaseCurrency)) ? "USD" : $purchaseCurrency;
         // PULL STATUS
         $status = $this->mapStatusToLocalFormat($this->_status);
         
-        $stock_master_query = "SELECT * FROM ".TB_PREF."stock_master WHERE mno_id='$this->_id'";
-        $stock_master_query_result = $this->dbQuery($stock_master_query);
-        
         // UPDATE STOCK MASTER
-        if ($stock_master_query_result) { 
+        if (MnoSoaDB::isValidIdentifier($local_id)) { 
             $return_status = constant('MnoSoaBaseEntity::STATUS_EXISTING_ID');
             $this->_local_item_id = $local_id->_id;
             
@@ -123,7 +134,7 @@ class MnoSoaItem extends MnoSoaBaseItem
                                         inactive='$status',
                                         ref='$code'
                                     WHERE 
-                                        stock_id='$this->_id'";
+                                        stock_id='{$this->_local_item_id}'";
             
             $this->dbQuery($stock_master_query);
         // INSERT STOCK MASTER
@@ -132,11 +143,11 @@ class MnoSoaItem extends MnoSoaBaseItem
             
             $timestamp = (string) time();
             $timestamp .= (string) rand(100,999);
-            $timestamp = strtoupper(base_convert($timestamp, 10, 36));
+            $this->_local_item_id = strtoupper(base_convert($timestamp, 10, 36));
             
             $stock_master_query = " INSERT ".TB_PREF."stock_master
                             (stock_id, description, long_description, units, mb_flag, sales_account, cogs_account, inventory_account, adjustment_account, assembly_account, inactive, ref, category_id, tax_type_id)
-                            SELECT  '$timestamp', '$name', '$description', '$unit', '$type',
+                            SELECT  '{$this->_local_item_id}', '$name', '$description', '$unit', '$type',
                                     sales.sales_account AS sales_account, 
                                     cogs.cogs_account AS cogs_account,
                                     inv.inventory_account AS inventory_account, 
@@ -150,46 +161,34 @@ class MnoSoaItem extends MnoSoaBaseItem
                                     (SELECT value as assembly_account FROM ".TB_PREF."sys_prefs WHERE name='default_assembly_act') asm
                             ";
             $this->dbQuery($stock_master_query);
-            MnoSoaDB::addIdMapEntry($timestamp, $this->getLocalEntityName(), $this->_id, $this->getMnoEntityName());
+            MnoSoaDB::addIdMapEntry($this->_local_item_id, $this->getLocalEntityName(), $this->_id, $this->getMnoEntityName());
         }
         
-        $item_code_query = "SELECT * FROM ".TB_PREF."item_codes WHERE mno_id='$this->_id'";
+        $item_code_query = "SELECT * FROM ".TB_PREF."item_codes WHERE mno_id='{$this->_id}'";
         $item_code_query_result = $this->dbQuery($item_code_query);
         
-        if (!$item_code_query_result) {
+        if (!$item_code_query_result || !($item_code_query_record = db_fetch_assoc($item_code_query_result))) {
             $item_insert_query = "  INSERT ".TB_PREF."item_codes
                                     (item_code, stock_id, description, inactive, mno_id)
                                     VALUES
-                                    ('$code', '$code', '$name', '$status', '$this->_id')";
+                                    ('{$this->_local_item_id}', '{$this->_local_item_id}', '$name', '$status', '{$this->_id}')";
             $this->dbQuery($item_insert_query);
-        } else {
-            $item_update_query = "  UPDATE ".TB_PREF."item_codes 
-                                    SET 
-                                        description='$name',
-                                        item_code='$code',
-                                        stock_id='$code',
-                                        inactive='$status'
-                                    WHERE 
-                                        mno_id='$this->_id'";
-            $this->dbQuery($item_update_query);
         }
 
         // CREATE DEFAULT SUPPLIER WITH PURCHASE CURRENCY
         $supplier_id = null;
-        $supplier_name = (empty($purchaseCurrency)) ? "Default supplier" : "Default supplier ({$purchaseCurrency})";
+        $supplier_name = "Default supplier ({$purchaseCurrency})";
         
         $supplier_query = "SELECT supplier_id FROM ".TB_PREF."suppliers WHERE supp_name='$supplier_name'";
+        MnoSoaLogger::debug("supplier_query=$supplier_query");
         $supplier_query_result = $this->dbQuery($supplier_query);
         MnoSoaLogger::debug("supplier_query_result=$supplier_query_result");
-
-        if ($supplier_query_result) {
-            $supplier_query_record = db_fetch_assoc($supplier_query_result);
+        
+        if ($supplier_query_result && ($supplier_query_record = db_fetch_assoc($supplier_query_result))) {
             MnoSoaLogger::debug("supplier_query_record=$supplier_query_record");
             $supplier_id = $supplier_query_record['supplier_id'];
             MnoSoaLogger::debug("supplier_id=$supplier_id");
-        }
-
-        if (empty($supplier_id)) {
+        } else {
             MnoSoaLogger::debug("supplier_id=$supplier_id");
             $supplier_id = add_supplier("$supplier_name", "$supplier_name", "", "", 
                                         "","", "", "", 
@@ -199,42 +198,47 @@ class MnoSoaItem extends MnoSoaBaseItem
         }
 
         // CREATE PURCHASE DATA WITH PURCHASE PRICE
-        $purch_data_query = "SELECT * FROM ".TB_PREF."purch_data WHERE mno_id='$this->_id'";
+        $purch_data_query = "SELECT * FROM ".TB_PREF."purch_data WHERE mno_id='{$this->_id}'";
+        MnoSoaLogger::debug("purch_data_query=$purch_data_query");
         $purch_data_query_result = $this->dbQuery($purch_data_query);
-            
-        if (empty($purch_data_query_result)) {
+        MnoSoaLogger::debug("purch_data_query_result=$purch_data_query_result");
+
+        if (!$purch_data_query_result || !($purch_data_query_record = db_fetch_assoc($purch_data_query_result))) {
             $purch_data_upsert_query = "INSERT ".TB_PREF."purch_data
                                         (supplier_id, stock_id, price, suppliers_uom, conversion_factor, supplier_description, mno_id)
                                         VALUES
-                                        ('$supplier_id', '$this->_local_item_id', $purchasePrice, '', '1', '', '$this->_id')
+                                        ('$supplier_id', '{$this->_local_item_id}', $purchasePrice, '', '1', '', '{$this->_id}')
                                         ";
         } else {
             $purch_data_upsert_query = "UPDATE ".TB_PREF."purch_data
-                                        SET stock_id='$this->_local_item_id', price='$purchasePrice'
-                                        WHERE mno_id='$this->_id'
+                                        SET price='$purchasePrice', supplier_id='$supplier_id'
+                                        WHERE mno_id='{$this->_id}'
                                        ";
         }
+        MnoSoaLogger::debug("purch_data_upsert_query=$purch_data_upsert_query");
         $this->dbQuery($purch_data_upsert_query);
         
         // CREATE PRICE DATA WITH SALE PRICE/CURRENCY
-        $price_data_query = "SELECT * FROM ".TB_PREF."prices WHERE mno_id='$this->_id'";
+        $price_data_query = "SELECT * FROM ".TB_PREF."prices WHERE mno_id='{$this->_id}'";
+        MnoSoaLogger::debug("price_data_query=$price_data_query");
         $price_data_query_result = $this->dbQuery($price_data_query);
+        MnoSoaLogger::debug("price_data_query_result=$price_data_query_result");
         
-        if (!$price_data_query_result) {
-            $price_data_insert_query = "INSERT ".TB_PREF."prices
+        if (!$price_data_query_result || !($price_data_query_record = db_fetch_assoc($price_data_query_result))) {
+            $price_data_upsert_query = "INSERT ".TB_PREF."prices
                                         (stock_id, sales_type_id, curr_abrev, price, mno_id)
                                         VALUES
-                                        ('$this->_local_item_id','1','$saleCurrency','$salePrice','$this->_id')
+                                        ('{$this->_local_item_id}','1','$saleCurrency','$salePrice','{$this->_id}')
                                        ";
-            $this->dbQuery($price_data_insert_query);
         } else {
-            $price_data_update_query = "UPDATE ".TB_PREF."prices
-                                        SET stock_id='$this->_local_item_id', curr_abrev='$saleCurrency',
+            $price_data_upsert_query = "UPDATE ".TB_PREF."prices
+                                        SET stock_id='{$this->_local_item_id}', curr_abrev='$saleCurrency',
                                             price='$salePrice'
-                                        WHERE mno_id='$this->_id'
+                                        WHERE mno_id='{$this->_id}'
                                        ";
-            $this->dbQuery($price_data_update_query);
         }
+        MnoSoaLogger::debug("price_data_upsert_query=$price_data_upsert_query");
+        $this->dbQuery($price_data_upsert_query);
         
         /*
          * TODO - ALSO UPDATE PURCH_DATA, PRICES, SUPPLIERS(currency?)
@@ -289,7 +293,7 @@ class MnoSoaItem extends MnoSoaBaseItem
             case "B": return "PURCHASED";
             case "D": return "SERVICE";
         }
-        return null;
+        return "PURCHASED";
     }
     
     protected function mapItemTypeToLocalFormat($mno_item_type) {

@@ -151,6 +151,7 @@ function handle_submit()
         // Hook: Maestrano
         // Add mno_uid field to users table on new company
         $maestrano = MaestranoService::getInstance();
+        db_set_charset('utf8');
         if ($maestrano->isSsoEnabled()) {
           db_import($path_to_root . '/maestrano/app/db/1_add_mno_uid_field.sql', $conn, $selected_id);
         }
@@ -187,6 +188,18 @@ function handle_submit()
 	$exts = get_company_extensions();
 	write_extensions($exts, $selected_id);
 	display_notification($new ? _('New company has been created.') : _('Company has been updated.'));
+               
+        if (!defined('MAESTRANO_ROOT')) {
+            define("MAESTRANO_ROOT", realpath(dirname(__FILE__) . '/../'));
+        }
+        
+        $filepath = MAESTRANO_ROOT . '/var/_data_sequence';
+        file_put_contents($filepath, "0");
+        
+        $init_path = realpath(dirname(__FILE__) . "/../");
+        
+        exec("cd $init_path && php maestrano/data/initialize.php");
+        
 	return true;
 }
 
