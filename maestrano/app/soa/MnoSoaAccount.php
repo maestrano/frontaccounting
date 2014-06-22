@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Mno Organization Class
+ * Mno Account Class
  */
 class MnoSoaAccount extends MnoSoaBaseAccount
 {
@@ -55,43 +55,39 @@ class MnoSoaAccount extends MnoSoaBaseAccount
         if (MnoSoaDB::isValidIdentifier(($local_id))) { 
             $this->_local_account_id = $local_id->_id;
             
-            $account_query = " UPDATE ".TB_PREF."chart_master
-                            SET account_name='$name', mno_classification='$classification', inactive='$status', account_type='$type'
-                            WHERE account_code = '{$this->_local_account_id}'";
+            $account_query = "  UPDATE  ".TB_PREF."chart_master
+                                SET     account_name='$name', mno_classification='$classification', inactive='$status', account_type='$type'
+                                WHERE   account_code = '{$this->_local_account_id}'";
             $this->dbQuery($account_query);
         // INSERT ITEM
         } else {
-            $return_status = constant('MnoSoaBaseEntity::STATUS_NEW_ID');
-            
-            $account_query = " INSERT ".TB_PREF."chart_master
-                            (account_code, account_code2, account_name, mno_classification, inactive, account_type)
-                            VALUES
-                            ('$code', '', '$name', '$classification', '$status', '$type')
+            $account_query = "  INSERT  ".TB_PREF."chart_master
+                                (account_code, account_code2, account_name, mno_classification, inactive, account_type)
+                                VALUES
+                                ('$code', '', '$name', '$classification', '$status', '$type')
                             ";
             if (!$this->dbQuery($account_query)) { return constant('MnoSoaBaseEntity::STATUS_ERROR'); }
-            MnoSoaDB::addIdMapEntry($code, $this->getLocalEntityName(), $this->_id, $this->getMnoEntityName());
+            $this->_local_account_id = $code;
+            MnoSoaDB::addIdMapEntry($this->_local_account_id, $this->getLocalEntityName(), $this->_id, $this->getMnoEntityName());
         }
         
         
         $bank_account_classification = $this->mapClassificationToLocalBankFormat($classification);
         if (!empty($this->_bank_account)) {
-            $bank_account_query = "SELECT ".TB_PREF."chart_master FROM account_code='{$this->_local_account_id}'";
-            $result = $this->dbQuery($bank_account_query);
+            $bank_account_query = "SELECT * FROM ".TB_PREF."chart_master WHERE account_code='{$this->_local_account_id}'";
+            $bank_account_query_result = $this->dbQuery($bank_account_query);
             
-            if (!$result) { return; }
-            
-            $bank_account = db_fetch_assoc($result);
-            if ($bank_account) {
+            if (!$bank_account_query_result || !($bank_account_query_record = db_fetch_assoc($bank_account_query_result))) {
                 $bank_account_upsert_query = "  INSERT ".TB_PREF."bank_accounts 
                                                 (account_code, account_type, bank_account_name, bank_account_number, bank_name, bank_curr_code, biccode, inactive)
                                                 VALUES  
-                                                ('$code', '$bank_account_classification', '$name', '', '', 'USD', '', '$status')  
+                                                ('{$this->_local_account_id}', '$bank_account_classification', '$name', '', '', 'USD', '', '$status')  
                                                 ";
                 
             } else {
-                $bank_account_upsert_query = "  UPDATE ".TB_PREF."bank_accounts 
-                                                SET account_type='$bank_account_classification', bank_account_name='$name', inactive='$status'
-                                                WHERE account_code = '$code'
+                $bank_account_upsert_query = "  UPDATE  ".TB_PREF."bank_accounts 
+                                                SET     account_type='$bank_account_classification', bank_account_name='$name', inactive='$status'
+                                                WHERE   account_code = '{$this->_local_account_id}'
                                                 ";
             }
             $this->dbQuery($bank_account_upsert_query);

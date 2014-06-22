@@ -25,7 +25,8 @@ function set_global_connection($company=-1)
 	$connection = $db_connections[$company];
 
 	$db = mysql_connect($connection["host"], $connection["dbuser"], $connection["dbpassword"]);
-		mysql_select_db($connection["dbname"], $db);
+        mysql_select_db($connection["dbname"], $db);
+        db_set_charset('utf8');
 	return $db;
 }
 
@@ -222,6 +223,13 @@ function db_close($dbase = null)
 	if (!$dbase)
 		$dbase = $db;
 	return mysql_close($dbase);
+}
+
+function db_set_charset($charset)
+{
+    global $db;
+    
+    return mysql_set_charset($charset,$db);
 }
 
 ?>

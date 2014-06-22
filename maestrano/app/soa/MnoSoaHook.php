@@ -209,9 +209,9 @@ function mno_hook_push_item($item_id) {
     $sql = "SELECT  sm.stock_id as id, sm.ref as code, sm.description as name, sm.long_description as description, 
                     sm.mb_flag as type, units.name as unit, pr.price as salePrice, pr.curr_abrev as saleCurrency, 
                     prdata.price as purchasePrice, supp.curr_code as purchaseCurrency, sm.inactive as status,
-                    prdata.suppId as supplier_id, pr.id as sale_price_id
+                    prdata.suppId as supplier_id, pr.id as sale_price_id, prdata.id as purchase_price_id
             FROM    ".TB_PREF."stock_master sm
-                    LEFT OUTER JOIN (SELECT min(supplier_id) as suppId, stock_id, price FROM ".TB_PREF."purch_data GROUP BY stock_id) prdata ON prdata.stock_id=sm.stock_id
+                    LEFT OUTER JOIN (SELECT min(id) as id, supplier_id as suppId, stock_id, price FROM ".TB_PREF."purch_data GROUP BY stock_id) prdata ON prdata.stock_id=sm.stock_id
                     LEFT OUTER JOIN (SELECT min(id) as id, stock_id, price, curr_abrev FROM ".TB_PREF."prices GROUP BY stock_id) pr ON sm.stock_id = pr.stock_id 
                     LEFT OUTER JOIN ".TB_PREF."suppliers supp ON prdata.suppId = supp.supplier_id
                     LEFT OUTER JOIN ".TB_PREF."item_units units ON units.abbr = sm.units
